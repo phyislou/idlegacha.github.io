@@ -1,5 +1,9 @@
 .App {
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  width: 100vw;
+  height: 100vh;
 }
 
 .App-logo {
@@ -39,36 +43,200 @@
 
 /* 个人设置 */
 
-.button {
+/* 隐藏滚动条 */
+::-webkit-scrollbar {
+  display: none !important; /* Chrome Safari */
+}
+
+/* 设置图标居中 */
+.marginAuto {
   margin: auto;
-  width: 4rem;
+}
+
+/* 按钮的设置 */
+.buttonContain {
+  margin: auto;
+  display: flex;
+  align-items: center;/*flex水平居中*/
+  justify-content: center;/*flex垂直居中*/
+  padding: 0.3rem;
+}
+
+.button {
+  padding: 0.2rem;
   border: solid 1px black;
   border-radius: 0.3rem;
 }
 
-/* 抽奖人物卡 */
+/* 导航栏 */
+.navArea {
+  width: 100%;
+  height: 3rem;
+  display: flex;
+  align-items: center;/*flex水平居中*/
+  justify-content: center;/*flex垂直居中*/
+  top: 0;
+  border-bottom: solid 1px black;
+}
+
+/* 盛放每个主页的元素 */
+.pageArea {
+  display: flex;
+  width: 100vw;
+  height: calc(100vh - 3rem);
+} 
+
+/* 设置弹出页面的遮罩层 */
+.boxPageMask {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 64;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;/*flex水平居中*/
+  justify-content: center;/*flex垂直居中*/
+}
+
+/* 较大的弹出页面 */
+.largeBoxBody {
+  width: 80%;
+  height: 80%;
+  background-color: white;
+  border: solid 1px black;
+  border-radius: 2rem;
+  overflow: scroll;
+}
+
+/* 抽奖操作按钮 */
+.gachaTimesOpera {
+  margin: auto;
+  display: flex;
+  align-items: center;/*flex水平居中*/
+  justify-content: center;/*flex垂直居中*/
+  width: 100%;
+}
+
+.gachaResultList {
+  margin: auto;
+  display: flex;
+  align-items: center;/*flex水平居中*/
+  justify-content: center;/*flex垂直居中*/
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+/* 人物卡 */
+.cardBase {
+  margin: 0.3rem;
+  padding: 0.2rem;
+  border-radius: 0.3rem;
+  width: 8.5rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;/*flex水平居中*/
+  justify-content: center;/*flex垂直居中*/
+}
 
 .cardStar5 {
   color: orange;
   text-shadow: 1px 0px 10px yellow;
+  border: solid 1px orange;
 }
 
 .cardStar4 {
   color: purple;
   text-shadow: 1px 0px 5px pink;
+  border: solid 1px purple;
 }
 
 .cardStar3 {
   color: blue;
   text-shadow: 1px 0px 2px cyan;
+  border: solid 1px blue;
 }
 
 .cardStar2 {
   color: sienna;
   /* text-shadow: 1px 0px 2px cyan; */
+  border: solid 1px gray;
 }
 
 .cardStar1 {
   color:gray;
   /* text-shadow: 1px 0px 2px cyan; */
+  border: solid 1px gray;
+}
+
+.cardUnkown {
+  background-color: gainsboro;
+  border: solid 1px gray;
+}
+
+/* 整个弹窗组件 */
+.component-hint {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+}
+
+/* 遮罩背景 */
+.hint-mask {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.7);
+}
+
+/* 弹窗区域（内容 + close）：严格居中 */
+.hint-box {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* 弹窗的内容部分 */
+.hint-content {
+  width: 15.45rem;
+  height: 19.32rem;
+  background-size: 15.45rem 19.32rem;
+}
+
+/* 弹窗的close图标 */
+.hint-close {
+  width: 1.25em;
+  height: 1.25em;
+  background-size: 1.25rem 1.25rem;
+  margin: 0 auto;
+  margin-top: 0.5rem;
+}
+
+/* 成就页面 */
+.AP-recordList {
+  margin: auto;
+  display: flex;
+  align-items: center;/* flex水平居中 */
+  justify-content: center;/* flex垂直居中 */
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+/* 房间页面 */
+.HP-aiboList {
+  display: flex;
+  align-content: flex-start;/* 主轴顶端对齐 */
+  justify-content: center;/* flex垂直居中 */
+  flex-wrap: wrap;
+  width: 100%;
+  overflow: scroll;
+  border: solid 1px black;
+  border-radius: 2rem;
 }

@@ -68,10 +68,10 @@
   border-radius: 0.3rem;
 }
 
-/* 导航栏 */
-.navArea {
+/* 个人信息栏 */
+.infoArea {
   width: 100%;
-  height: 3rem;
+  height: 2rem;
   display: flex;
   align-items: center;/*flex水平居中*/
   justify-content: center;/*flex垂直居中*/
@@ -79,11 +79,22 @@
   border-bottom: solid 1px black;
 }
 
+/* 导航栏 */
+.navArea {
+  width: 100%;
+  height: 3rem;
+  display: flex;
+  align-items: center;/*flex水平居中*/
+  justify-content: center;/*flex垂直居中*/
+  bottom: 0;
+  border-top: solid 1px black;
+}
+
 /* 盛放每个主页的元素 */
 .pageArea {
   display: flex;
   width: 100vw;
-  height: calc(100vh - 3rem);
+  height: calc(100vh - 5rem);
 } 
 
 /* 设置弹出页面的遮罩层 */
@@ -110,6 +121,16 @@
   overflow: scroll;
 }
 
+/* 适中的弹出页面 */
+.middleBoxBody {
+  width: 40%;
+  height: 40%;
+  background-color: white;
+  border: solid 1px black;
+  border-radius: 2rem;
+  overflow: scroll;
+}
+
 /* 抽奖操作按钮 */
 .gachaTimesOpera {
   margin: auto;
@@ -130,6 +151,7 @@
 
 /* 人物卡 */
 .cardBase {
+  position: relative;
   margin: 0.3rem;
   padding: 0.2rem;
   border-radius: 0.3rem;
@@ -140,34 +162,65 @@
   justify-content: center;/*flex垂直居中*/
 }
 
-.cardStar5 {
+/* 标识人物卡上的星级 */
+.cardStars {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 0.7rem;
+  display: flex;
+  align-items: center;/*flex水平居中*/
+  justify-content: center;/*flex垂直居中*/
+}
+
+.cardLevel5 {
   color: orange;
   text-shadow: 1px 0px 10px yellow;
   border: solid 1px orange;
 }
 
-.cardStar4 {
+.starLevel5 {
+  color: orange;
+}
+
+.cardLevel4 {
   color: purple;
   text-shadow: 1px 0px 5px pink;
   border: solid 1px purple;
 }
 
-.cardStar3 {
+.starLevel4 {
+  color: purple;
+}
+
+.cardLevel3 {
   color: blue;
   text-shadow: 1px 0px 2px cyan;
   border: solid 1px blue;
 }
 
-.cardStar2 {
+.starLevel3 {
+  color: blue;
+}
+
+.cardLevel2 {
   color: sienna;
   /* text-shadow: 1px 0px 2px cyan; */
   border: solid 1px gray;
 }
 
-.cardStar1 {
+.starLevel2 {
+  color: sienna;
+}
+
+.cardLevel1 {
   color:gray;
   /* text-shadow: 1px 0px 2px cyan; */
   border: solid 1px gray;
+}
+
+.starLevel1 {
+  color: gray;
 }
 
 .cardUnkown {
@@ -230,6 +283,12 @@
 }
 
 /* 房间页面 */
+.HP-border {
+  border: solid 1px black;
+  border-radius: 2rem;
+  display: flex;
+}
+
 .HP-aiboList {
   display: flex;
   align-content: flex-start;/* 主轴顶端对齐 */
@@ -237,6 +296,21 @@
   flex-wrap: wrap;
   width: 100%;
   overflow: scroll;
-  border: solid 1px black;
-  border-radius: 2rem;
+}
+
+.HP-head {
+  display: flex;
+  align-items: center;/* flex水平居中 */
+  justify-content: center;/* flex垂直居中 */
+  border-bottom: solid 1px black;
+}
+
+/* 地图页面 */
+.areaDiv {
+  display: flex;
+  align-items: center;/* flex水平居中 */
+  justify-content: center;/* flex垂直居中 */
+  border-bottom: solid 1px black;
+  width: 100%;
+  height: 3rem;
 }

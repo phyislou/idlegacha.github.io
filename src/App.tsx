@@ -1,6 +1,23 @@
 import React, { useState, useEffect, useRef, Suspense } from 'react'
 import './App.less'
 import './css/font-awesome.css'
+import { BottomNavigation, BottomNavigationAction, Button } from '@material-ui/core'
+import { Theme, createStyles, makeStyles } from '@material-ui/core/styles'
+import LinearProgress, { LinearProgressProps } from '@material-ui/core/LinearProgress'
+import Typography from '@material-ui/core/Typography'
+import Box from '@material-ui/core/Box'
+import GridList from '@material-ui/core/GridList'
+import GridListTile from '@material-ui/core/GridListTile'
+import GridListTileBar from '@material-ui/core/GridListTileBar'
+import ListSubheader from '@material-ui/core/ListSubheader'
+import IconButton from '@material-ui/core/IconButton'
+import InfoIcon from '@material-ui/icons/Info'
+import StarRateIcon from '@material-ui/icons/StarRate'
+import CollectionsBookmarkIcon from '@material-ui/icons/CollectionsBookmark'
+import HomeIcon from '@material-ui/icons/Home'
+import LocationCityIcon from '@material-ui/icons/LocationCity'
+import MapIcon from '@material-ui/icons/Map'
+import Img from './1.jpg'
 
 // 伙伴数据
 interface aiboType {
@@ -338,7 +355,7 @@ function gacha () {
 }
 
 // 绘制按钮组件
-interface ButtonProps {
+/* interface ButtonProps {
   buttonName: string,
   onClick: (paras: any) => any
 }
@@ -349,7 +366,7 @@ function Button (props: ButtonProps) {
       <div className='button' onClick={props.onClick}>{props.buttonName}</div>
     </div>
   )
-}
+} */
 
 // 绘制召唤人物卡
 interface AiboCardProps extends aiboType {
@@ -357,7 +374,9 @@ interface AiboCardProps extends aiboType {
 }
 
 function AiboCard (props: AiboCardProps) {
-  if (props.id === 0 || !props.star) {return <div className={'cardBase cardUnkown'} onClick={props.onClick}>{props.name}</div>}
+  if (props.id === 0 || !props.star) {
+    return <Button variant='contained' disabled className={'cardBase'} onClick={props.onClick}>{'未获得'}</Button>
+  }
   // 根据输入星级选择该渲染的类型
   let cardClass = 'cardUnkown'
   switch (props.star) {
@@ -383,12 +402,11 @@ function AiboCard (props: AiboCardProps) {
     stars.push(<div key={i} className='fa fa-star fa-2s'></div>)
   }
   return (
-    <div className={'cardBase ' + cardClass} onClick={props.onClick}>
+    <Button variant='outlined' className={'cardBase ' + cardClass} onClick={props.onClick}>
       {props.name}
       <div className='cardStars'>
         {stars}
-      </div>
-    </div>
+      </div></Button>
   )
 }
 
@@ -484,17 +502,17 @@ function GachaPage (props: GachaPageProps) {
             </div>
           </div>
         )}
-        <Button buttonName='关闭召唤页面' onClick={() => props.setShowGachaPage(false)}/>
+        <Button variant='outlined' onClick={() => props.setShowGachaPage(false)}>关闭召唤页面</Button>
         <div>{'召唤一次消耗' + gachaCost + '次元结晶，满十连赠送一次。'}</div>
         <div>召唤后剩余次元结晶：{props.userDimenstal - gachaTimes * gachaCost}</div>
         <div>召唤次数：{gachaTimes}{bonusTimes > 0 ? '+' + bonusTimes : null}</div>
         <div className='gachaTimesOpera'>
-          <Button buttonName='减少十次' onClick={() => {changeGacha(-10)}}/>
-          <Button buttonName='减少一次' onClick={() => {changeGacha(-1)}}/>
-          <Button buttonName='增加一次' onClick={() => {changeGacha(1)}}/>
-          <Button buttonName='增加十次' onClick={() => {changeGacha(10)}}/>
+          <Button variant='outlined' onClick={() => {changeGacha(-10)}}>减少十次</Button>
+          <Button variant='outlined' onClick={() => {changeGacha(-1)}}>减少一次</Button>
+          <Button variant='outlined' onClick={() => {changeGacha(1)}}>增加一次</Button>
+          <Button variant='outlined' onClick={() => {changeGacha(10)}}>增加十次</Button>
         </div>
-        <Button buttonName='开始召唤' onClick={() => {onGacha(gachaTimes)}}/>
+        <Button variant='outlined' onClick={() => {onGacha(gachaTimes)}}>开始召唤</Button>
         <div className='gachaResultList'>
           {gachaResult.map((val: aiboType, ind: number) => <AiboCard
             key={ind + '-' + val.id/* 这里考虑到diff的效率，用两个字段拼接作为key */}
@@ -530,15 +548,15 @@ function AiboChoosePage (props: AiboChoosePageProps) {
       {showWarningPage && (
         <div className='boxPageMask'>
           <div className='middleBoxBody'>
-            <Button buttonName='关闭警告' onClick={() => setShowWarningPage(false)}/>
+            <Button variant='outlined' onClick={() => setShowWarningPage(false)}>关闭警告</Button>
             {'队伍中已存在该伙伴'}
           </div>
         </div>)}
       <div className='largeBoxBody'>
-        <Button buttonName='关闭选择页面' onClick={() => props.setShowAiboChoosePage(false)}/>
-        <Button buttonName='清除该栏位的伙伴' onClick={() => {
+        <Button variant='outlined' onClick={() => props.setShowAiboChoosePage(false)}>关闭选择页面</Button>
+        <Button variant='outlined' onClick={() => {
           setAiboTeamAndClosePage(0)
-        }}/>
+        }}>清除该栏位的伙伴</Button>
         <div className='HP-aiboList'>
           {props.aiboStore.map((val) => <AiboCard key={val.aiboId} onClick={() => {
             // 选择了某张伙伴卡后，首先判断该卡是否已在队伍里面，是的话则弹出警告页面
@@ -654,7 +672,7 @@ function AiboInfoPage (props: AiboInfoPageProps) {
       <div>生命：{props.chosenAiboInfo.hp}</div>
       <div>攻击：{props.chosenAiboInfo.atk}</div>
       <div>防御：{props.chosenAiboInfo.def}</div>
-      <Button buttonName={'惜别当前伙伴：返还' + props.chosenAiboInfo.dimenstal + '次元结晶'} onClick={props.deleteAibo} />
+      <Button variant='outlined' onClick={props.deleteAibo}>{'惜别当前伙伴：返还' + props.chosenAiboInfo.dimenstal + '次元结晶'}</Button>
     </div>)
   )
 }
@@ -673,12 +691,10 @@ function AiboTeamPage (props: AiboTeamPageProps) {
       {props.aiboTeam.map((val, ind) => {
         let chara = props.aiboStore.find((x) => x.aiboId === val)
         return (
-          <div key={ind} className='button' onClick={() => {
+          <Button variant='outlined' key={ind} onClick={() => {
             props.setNowChoosenAibo(ind)
             props.setShowAiboChoosePage(true)
-          }}>
-            {'队员' + (ind + 1) + '：' + (chara?.name/* 链式判断 */ || '无')}
-          </div>
+          }}>{'队员' + (ind + 1) + '：' + (chara?.name/* 链式判断 */ || '无')}</Button>
         )
       })}
     </div>
@@ -692,7 +708,55 @@ interface MarketPageProps {
 
 function MarketPage (props: MarketPageProps) {
   return (
-    <div className='pageArea'><Button buttonName='召唤' onClick={() => {props.setShowGachaPage(true)}}/></div>
+    <div className='pageArea'><Button variant='outlined' className='marginAuto' onClick={() => {props.setShowGachaPage(true)}}>召唤</Button></div>
+  )
+}
+
+// 进度条组件
+function LinearProgressWithLabel (props: LinearProgressProps & { value: number }) {
+  return (
+    <Box display="flex" alignItems="center">
+      <Box width="100%" mr={1}>
+        <LinearProgress variant="determinate" {...props} />
+      </Box>
+      <Box minWidth={35}>
+        <Typography variant="body2" color="textSecondary">{`${Math.round(
+          props.value
+        )}%`}</Typography>
+      </Box>
+    </Box>
+  )
+}
+
+function LinearWithValueLabel () {
+  const useStyles = makeStyles({
+    root: {
+      width: '80%'
+    }
+  })
+
+  const classes = useStyles()
+  const [progress, setProgress] = React.useState(0)
+
+  React.useEffect(() => {
+    const timer = setInterval(() => {
+      setProgress((prevProgress: number) => (prevProgress < 100 ? prevProgress + 10 : (function () {
+        // qes:执行两遍？
+        console.log('finsh')
+        clearInterval(timer)
+        return 100
+      }())))
+    }, 300)
+    // 正常情况不会在这里return
+    return () => {
+      clearInterval(timer)
+    }
+  }, [])
+
+  return (
+    <div className={classes.root}>
+      <LinearProgressWithLabel value={progress} />
+    </div>
   )
 }
 
@@ -730,11 +794,56 @@ function MapPage (props: MapPageProps) {
       <div style={{ flex: 3, display: 'flex', flexDirection: 'column' }}>
         {mapInfo[0].areas[props.nowArea].quests.map((val) => (
           val.id/* 这个值即为当前关卡的id */ > props.clearedQuest/* 判断其是否大于用户已完成的进度 */ ? null : (
-            <div key={val.index} className='areaDiv' onClick={() => {}}>{val.name}</div>
+            <div key={val.index} className='areaDiv' onClick={() => {}}>{val.name}
+              <LinearWithValueLabel />
+            </div>
           )
         ))}
       </div>
     </div>
+  )
+}
+
+// 建立底部导航栏
+interface NavigationProps {
+  setTogglePage: (para: boolean[]) => void
+}
+
+function Navigation (props: NavigationProps) {
+  const useStyles = makeStyles({
+    root: {
+      width: '100%',
+      border: 'solid 1px black',
+      bottom: 0
+    }
+  })
+  const classes = useStyles()
+  const [value, setValue] = React.useState('recents')
+
+  const handleChange = (event: any, newValue: any) => {
+    switch (newValue) {
+    case 'achi':
+      props.setTogglePage([true, false, false, false])
+      break
+    case 'room':
+      props.setTogglePage([false, true, false, false])
+      break
+    case 'town':
+      props.setTogglePage([false, false, true, false])
+      break
+    case 'maps':
+      props.setTogglePage([false, false, false, true])
+    }
+    setValue(newValue)
+  }
+
+  return (
+    <BottomNavigation value={value} showLabels onChange={handleChange} className={classes.root}>
+      <BottomNavigationAction label='成就' value='achi' icon={<CollectionsBookmarkIcon />} />
+      <BottomNavigationAction label='房间' value='room' icon={<HomeIcon />} />
+      <BottomNavigationAction label='城镇' value='town' icon={<LocationCityIcon />} />
+      <BottomNavigationAction label='地图' value='maps' icon={<MapIcon />} />
+    </BottomNavigation>
   )
 }
 
@@ -880,10 +989,7 @@ function App () {
       </div>
       {/* 导航栏 */}
       <div className='navArea'>
-        <Button buttonName='成就' onClick={() => {setTogglePage([true, false, false, false])}}/>
-        <Button buttonName='房间' onClick={() => {setTogglePage([false, true, false, false])}}/>
-        <Button buttonName='城镇' onClick={() => {setTogglePage([false, false, true, false])}}/>
-        <Button buttonName='地图' onClick={() => {setTogglePage([false, false, false, true])}}/>
+        <Navigation setTogglePage={setTogglePage} />
       </div>
     </div>
   )

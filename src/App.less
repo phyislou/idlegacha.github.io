@@ -50,7 +50,7 @@
 
 /* 设置图标居中 */
 .marginAuto {
-  margin: auto;
+  margin: auto!important;
 }
 
 /* 设置进度条 */
@@ -106,19 +106,17 @@
 /* 导航栏 */
 .navArea {
   width: 100%;
-  height: 3rem;
   display: flex;
   align-items: center;/*flex水平居中*/
   justify-content: center;/*flex垂直居中*/
   bottom: 0;
-  border-top: solid 1px black;
 }
 
 /* 盛放每个主页的元素 */
 .pageArea {
   display: flex;
   width: 100vw;
-  height: calc(100vh - 5rem);
+  height: calc(100vh - 2rem - 56px);
 } 
 
 /* 设置弹出页面的遮罩层 */
@@ -171,19 +169,15 @@
   justify-content: center;/*flex垂直居中*/
   width: 100%;
   flex-wrap: wrap;
+  overflow: scroll;
 }
 
 /* 人物卡 */
 .cardBase {
   position: relative;
-  margin: 0.3rem;
-  padding: 0.2rem;
-  border-radius: 0.3rem;
-  width: 8.5rem;
-  height: 2rem;
-  display: flex;
-  align-items: center;/*flex水平居中*/
-  justify-content: center;/*flex垂直居中*/
+  margin: 0.5rem!important;
+  width: 9rem!important;
+  height: 2.5rem!important;
 }
 
 /* 标识人物卡上的星级 */
@@ -198,53 +192,33 @@
 }
 
 .cardLevel5 {
-  color: orange;
-  text-shadow: 1px 0px 10px yellow;
-  border: solid 1px orange;
-}
-
-.starLevel5 {
-  color: orange;
+  color: orange!important;
+  text-shadow: 1px 0px 10px yellow!important;
+  border: solid 1px orange!important;
 }
 
 .cardLevel4 {
-  color: purple;
-  text-shadow: 1px 0px 5px pink;
-  border: solid 1px purple;
-}
-
-.starLevel4 {
-  color: purple;
+  color: purple!important;
+  text-shadow: 1px 0px 5px pink!important;
+  border: solid 1px purple!important;
 }
 
 .cardLevel3 {
-  color: blue;
-  text-shadow: 1px 0px 2px cyan;
-  border: solid 1px blue;
-}
-
-.starLevel3 {
-  color: blue;
+  color: blue!important;
+  text-shadow: 1px 0px 2px cyan!important;
+  border: solid 1px blue!important;
 }
 
 .cardLevel2 {
-  color: sienna;
-  /* text-shadow: 1px 0px 2px cyan; */
-  border: solid 1px gray;
-}
-
-.starLevel2 {
-  color: sienna;
+  color: sienna!important;
+  /* text-shadow: 1px 0px 2px cyan!important; */
+  border: solid 1px gray!important;
 }
 
 .cardLevel1 {
-  color:gray;
-  /* text-shadow: 1px 0px 2px cyan; */
-  border: solid 1px gray;
-}
-
-.starLevel1 {
-  color: gray;
+  color:gray!important;
+  /* text-shadow: 1px 0px 2px cyan!important; */
+  border: solid 1px gray!important;
 }
 
 .cardUnkown {
@@ -303,7 +277,9 @@
   align-items: center;/* flex水平居中 */
   justify-content: center;/* flex垂直居中 */
   width: 100%;
+  height: 100%;
   flex-wrap: wrap;
+  overflow: scroll;
 }
 
 /* 房间页面 */

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, Suspense } from 'react'
-import './App.css'
+import './App.less'
 import './css/font-awesome.css'
 
 // 伙伴数据
@@ -157,68 +157,104 @@ const aiboInfo = [
 const mapInfo = [
   {
     index: 0,
-    name: '卡利托斯市区',
-    remark: '繁华的盆地城市',
-    quests: [
+    name: '威斯托大区',
+    areas: [
       {
         index: 0,
-        id: '1-1',
-        name: '金德利商场',
-        remark: '街坊间很有口碑的商店，开在热闹的集市中心',
-        questHP: 600
+        name: '卡利托斯市区',
+        remark: '繁华的盆地城市',
+        quests: [
+          {
+            index: 0,
+            id: 1,
+            name: '1-1-1: 金德利商场',
+            remark: '街坊间很有口碑的商店，开在热闹的集市中心',
+            HP: 600
+          },
+          {
+            index: 1,
+            id: 2,
+            name: '1-1-2: 东门门口',
+            remark: '出城的要道',
+            HP: 600
+          }
+        ]
       },
       {
         index: 1,
-        id: '1-2',
-        name: '东门门口',
-        remark: '出城的要道',
-        questHP: 600
+        name: '洛洛利亚森林外部',
+        remark: '卡利托斯与外界连通的主干道',
+        quests: [
+          {
+            index: 0,
+            id: 3,
+            name: '1-2-1: 风息牧场',
+            remark: '市郊的大型牧场',
+            HP: 600
+          },
+          {
+            index: 1,
+            id: 4,
+            name: '1-2-2: 雅梵丽的白色风车',
+            remark: '卡利托斯的著名地标，在城内也能看到',
+            HP: 600
+          }
+        ]
+      },
+      {
+        index: 2,
+        name: '辰辉镇',
+        remark: '四通八达的交通要镇，商业发达',
+        quests: [
+          {
+            index: 0,
+            id: 5,
+            name: '1-3-1: 陶理斯兄弟旅馆',
+            remark: '镇边路口附近的旅馆，价格实惠，客流量也很大',
+            HP: 600
+          },
+          {
+            index: 1,
+            id: 6,
+            name: '1-3-2: 鹰旋高台',
+            remark: '山崖断裂形成的高台，能够望见整个辰辉镇',
+            HP: 600
+          }
+        ]
       }
     ]
   },
   {
     index: 1,
-    name: '洛洛利亚森林外部',
-    remark: '卡利托斯与外界连通的主干道',
-    quests: [
+    name: '布伦提亚大区',
+    areas: [
       {
         index: 0,
-        id: '2-1',
-        name: '风息牧场',
-        remark: '市郊的大型牧场',
-        questHP: 600
-      },
-      {
-        index: 1,
-        id: '2-2',
-        name: '雅梵丽的白色风车',
-        remark: '卡利托斯的著名地标，在城内也能看到',
-        questHP: 600
-      }
-    ]
-  },
-  {
-    index: 2,
-    name: '辰辉镇',
-    remark: '四通八达的交通要镇，商业发达',
-    quests: [
-      {
-        index: 0,
-        id: '3-1',
-        name: '陶理斯旅馆',
-        remark: '镇边路口附近的旅馆，价格实惠，客流量也很大',
-        questHP: 600
-      },
-      {
-        index: 1,
-        id: '3-2',
-        name: '鹰旋高台',
-        remark: '山崖断裂形成的高台，能够望见整个辰辉镇',
-        questHP: 600
+        name: '海滨灯塔',
+        remark: '给来航船只导航的灯塔，现在已经弃用了',
+        quests: [
+          {
+            index: 0,
+            id: 7,
+            name: '2-1-1: 灯塔外围',
+            remark: '灯塔外围',
+            HP: 600
+          },
+          {
+            index: 1,
+            id: 8,
+            name: '2-1-2: 灯塔一层',
+            remark: '灯塔一层',
+            HP: 600
+          }
+        ]
       }
     ]
   }
 ]
+
+// 地图完成情况的初始记录，格式应该与上面的地图信息相同
+const mapRecordInitEasy = [[[false, false], [false, false], [false, false]], [[false, false]]]
 
 // 记录用户伙伴的数据类型
 interface userAiboType extends aiboType {
@@ -344,7 +380,7 @@ function AiboCard (props: AiboCardProps) {
   // 判断并绘制需要几颗星星
   let stars = []
   for (let i = 0; i < props.star; i++) {
-    stars.push(<div className='fa fa-star fa-2s'></div>)
+    stars.push(<div key={i} className='fa fa-star fa-2s'></div>)
   }
   return (
     <div className={'cardBase ' + cardClass} onClick={props.onClick}>
@@ -663,10 +699,18 @@ function MarketPage (props: MarketPageProps) {
 // 建立地图页面
 interface MapPageProps {
   nowArea: number,
-  setNowArea: (para: number) => void
+  setNowArea: (para: number) => void,
+  mapRecordEasy: boolean[][][],
+  setMapRecordEasy: (para: boolean[][][]) => void,
+  clearedQuest: number,
+  setClearedQuest: (para: number) => void
 }
 
 function MapPage (props: MapPageProps) {
+  function battle () {
+
+  }
+
   return (
     <div className='pageArea'>
       {/* 地区列表模块 */}
@@ -675,15 +719,19 @@ function MapPage (props: MapPageProps) {
           <div>{'地区列表'}</div>
         </div>
         <div style={{ flex: 15 }} className='HP-aiboList'>
-          {mapInfo.map((val) => (
-            <div key={val.index} className='areaDiv' onClick={() => {props.setNowArea(val.index)}}>{val.name}</div>
+          {mapInfo[0].areas.map((val) => (
+            val.quests[0].id/* 这个值即为当前地区中第一个关卡的id */ > props.clearedQuest/* 判断其是否大于用户已完成的进度 */ ? null : (
+              <div key={val.index} className='areaDiv' onClick={() => {props.setNowArea(val.index)}}>{val.name}</div>
+            )
           ))}
         </div>
       </div>
       {/* 地区关卡模块 */}
       <div style={{ flex: 3, display: 'flex', flexDirection: 'column' }}>
-        {mapInfo[props.nowArea].quests.map((val) => (
-          <div key={val.index} className='areaDiv' onClick={() => {props.setNowArea(val.index)}}>{val.name}</div>
+        {mapInfo[0].areas[props.nowArea].quests.map((val) => (
+          val.id/* 这个值即为当前关卡的id */ > props.clearedQuest/* 判断其是否大于用户已完成的进度 */ ? null : (
+            <div key={val.index} className='areaDiv' onClick={() => {}}>{val.name}</div>
+          )
         ))}
       </div>
     </div>
@@ -711,6 +759,8 @@ function App () {
   const aiboTeamHistory = localStorage.getItem('aiboTeam') === null ? [...Array(4)].map(() => 0) : JSON.parse(localStorage.getItem('aiboTeam') as string)
   const togglePageHistory = localStorage.getItem('togglePage') === null ? [false, true, false, false] : JSON.parse(localStorage.getItem('togglePage') as string)
   const nowAreaHistory = localStorage.getItem('nowArea') === null ? 0 : JSON.parse(localStorage.getItem('nowArea') as string)
+  const mapRecordHistory = localStorage.getItem('mapRecordEasy') === null ? mapRecordInitEasy : JSON.parse(localStorage.getItem('mapRecordEasy') as string)
+  const clearedQuestHistory = localStorage.getItem('clearedQuest') === null ? 1 : JSON.parse(localStorage.getItem('clearedQuest') as string)
   // const areaStateHistory = localStorage.getItem('areaState') === null ? [...Array(mapInfo.length)].map(() => false) : JSON.parse(localStorage.getItem('areaState') as string)
   // const questStateHistory = localStorage.getItem('questState') === null ? [...Array(4)].map(() => 0) : JSON.parse(localStorage.getItem('questState') as string)
 
@@ -730,6 +780,10 @@ function App () {
   const [nowChoosenAibo, setNowChoosenAibo] = useState(0)
   // 当前显示的地区
   const [nowArea, setNowArea] = useState(nowAreaHistory)
+  // 简单难度下地图的完成情况
+  const [mapRecordEasy, setMapRecordEasy] = useState(mapRecordHistory)
+  // 当前玩家正在打第几关，也就是说页面需要渲染到第几关，之后的关卡不再渲染
+  const [clearedQuest, setClearedQuest] = useState(clearedQuestHistory)
 
   /* 用户的个人数据 */
   // 用户的次元结晶
@@ -753,6 +807,8 @@ function App () {
     localStorage.setItem('aiboTeam', JSON.stringify(aiboTeam))
     localStorage.setItem('togglePage', JSON.stringify(togglePage))
     localStorage.setItem('nowArea', JSON.stringify(nowArea))
+    localStorage.setItem('mapRecordEasy', JSON.stringify(mapRecordEasy))
+    localStorage.setItem('clearedQuest', JSON.stringify(clearedQuest))
     localStorage.setItem('initGame', 'alreadyInit')
   }, 5000)
 
@@ -816,6 +872,10 @@ function App () {
         {togglePage[3] && (<MapPage
           nowArea={nowArea}
           setNowArea={setNowArea}
+          mapRecordEasy={mapRecordEasy}
+          setMapRecordEasy={setMapRecordEasy}
+          clearedQuest={clearedQuest}
+          setClearedQuest={setClearedQuest}
         />)}
       </div>
       {/* 导航栏 */}

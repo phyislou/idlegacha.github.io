@@ -1,7 +1,5 @@
 .App {
   text-align: center;
-  display: flex;
-  flex-direction: column;
   width: 100vw;
   height: 100vh;
 }
@@ -53,6 +51,59 @@
   margin: auto!important;
 }
 
+/* 用来给事物在容器内垂直水平居中 */
+.flexCenter {
+  display: flex;
+  align-items: center;/* flex水平居中 */
+  justify-content: center;/* flex垂直居中 */
+}
+
+.flexCol {
+  display: flex;
+  flex-direction: column;
+}
+
+.flex-1 {
+  flex: 1;
+}
+
+.flex-2 {
+  flex: 2;
+}
+
+.flex-3 {
+  flex: 3;
+}
+
+.flex-7 {
+  flex: 7;
+}
+
+.flex-15 {
+  flex: 15;
+}
+
+/* 设置展示用的列表 */
+.containBorder {
+  height: calc(100% - 2px);
+  border: solid 1px gray;
+  border-radius: 2rem;
+  display: flex;
+}
+
+.borderBottom {
+  border-bottom: solid 1px gray;
+}
+
+.aiboList {
+  display: flex;
+  align-content: flex-start;/* 主轴顶端对齐 */
+  justify-content: center;/* flex垂直居中 */
+  flex-wrap: wrap;
+  width: 100%;
+  overflow: scroll;
+}
+
 /* 设置进度条 */
 .progressWrap {
   margin: 6px 3px;
@@ -92,32 +143,35 @@
   border-radius: 0.3rem;
 }
 
-/* 个人信息栏 */
-.infoArea {
-  width: 100%;
-  height: 2rem;
-  display: flex;
-  align-items: center;/*flex水平居中*/
-  justify-content: center;/*flex垂直居中*/
-  top: 0;
-  border-bottom: solid 1px black;
-}
-
-/* 导航栏 */
-.navArea {
-  width: 100%;
-  display: flex;
-  align-items: center;/*flex水平居中*/
-  justify-content: center;/*flex垂直居中*/
-  bottom: 0;
-}
-
-/* 盛放每个主页的元素 */
-.pageArea {
-  display: flex;
+/* 顶部：个人信息栏，以及底部：导航栏 */
+.infoBar {
   width: 100vw;
-  height: calc(100vh - 2rem - 56px);
-} 
+  height: 6vh;
+  display: flex;
+  align-items: center;/*flex水平居中*/
+  justify-content: center;/*flex垂直居中*/
+}
+
+/* 中部：盛放每个主页的元素 */
+.pageContain {
+  width: 100vw;
+  height: calc(88vh - 2px);
+  border-top: solid 1px gray;
+  border-bottom: solid 1px gray;
+}
+
+.pageArea {
+  width: 100%;
+  height: 100%;
+  overflow: scroll;
+  display: flex;
+  align-items: center;/*flex水平居中*/
+  justify-content: center;/*flex垂直居中*/
+}
+
+.flexWrap {
+  flex-wrap: wrap;/* 排满换行 */
+}
 
 /* 设置弹出页面的遮罩层 */
 .boxPageMask {
@@ -268,41 +322,6 @@
   background-size: 1.25rem 1.25rem;
   margin: 0 auto;
   margin-top: 0.5rem;
-}
-
-/* 成就页面 */
-.AP-recordList {
-  margin: auto;
-  display: flex;
-  align-items: center;/* flex水平居中 */
-  justify-content: center;/* flex垂直居中 */
-  width: 100%;
-  height: 100%;
-  flex-wrap: wrap;
-  overflow: scroll;
-}
-
-/* 房间页面 */
-.HP-border {
-  border: solid 1px black;
-  border-radius: 2rem;
-  display: flex;
-}
-
-.HP-aiboList {
-  display: flex;
-  align-content: flex-start;/* 主轴顶端对齐 */
-  justify-content: center;/* flex垂直居中 */
-  flex-wrap: wrap;
-  width: 100%;
-  overflow: scroll;
-}
-
-.HP-head {
-  display: flex;
-  align-items: center;/* flex水平居中 */
-  justify-content: center;/* flex垂直居中 */
-  border-bottom: solid 1px black;
 }
 
 /* 地图页面 */

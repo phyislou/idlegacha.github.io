@@ -8,12 +8,15 @@ import {
   BottomNavigation,
   BottomNavigationAction,
   Box,
+  Checkbox,
   GridList,
   GridListTile,
   GridListTileBar,
+  Grow,
   IconButton,
   LinearProgress,
   ListSubheader,
+  Paper,
   Typography
 } from '@material-ui/core'
 import { Theme, createStyles, makeStyles } from '@material-ui/core/styles'
@@ -48,6 +51,19 @@ interface userAiboType extends aiboType {
   exp?: number
 }
 
+// 每个关卡的数据类型
+interface questType {
+  index: number,
+  name: string,
+  remark: string,
+  id: number,
+  HP: number,
+  gold: number
+}
+
+// 用来给给定字段排序
+// enum sortableAttr {id, star, hp, atk, def, dimenstal, aiboId, level, exp}
+
 // 用于卡池概率的控制
 const star5 = [
   37, 38, 66, 72, 73, 77, 94, 99, 100, 102, 105, 106, 111, 113, 114, 115,
@@ -72,7 +88,7 @@ const star1 = [
 ]
 
 // 请求数据
-function getData (dataAddr: string, assignFunc: (result: any) => void) {
+const getData = (dataAddr: string, assignFunc: (result: any) => void) => {
   // 抓取json数据
   fetch(dataAddr, {
     method: 'GET',
@@ -90,7 +106,7 @@ function getData (dataAddr: string, assignFunc: (result: any) => void) {
 }
 
 // 延时，定时器
-function useInterval (callback: (...para: any) => void, delay: number) {
+const useInterval = (callback: (...para: any) => void, delay: number) => {
   const latestCallback = useRef()
   // 保存新回调
   useEffect(() => {
@@ -107,15 +123,15 @@ function useInterval (callback: (...para: any) => void, delay: number) {
 }
 
 // 处理一次召唤，设置概率
-function gacha () {
+const gacha = () => {
   let randomNum = Math.random()
-  if (randomNum > 40 / 121) { // (3+12*sqrt(2))/31
+  if (randomNum > 15 / 31) { // (3+12*sqrt(2))/31
     return star1[Math.floor((Math.random() * star1.length))]
-  } else if (randomNum > 13 / 121) {// (15-2*sqrt(2))/31
+  } else if (randomNum > 7 / 31) {// (15-2*sqrt(2))/31
     return star2[Math.floor((Math.random() * star2.length))]
-  } else if (randomNum > 4 / 121) {// (1+4*sqrt(2))/31
+  } else if (randomNum > 3 / 31) {// (1+4*sqrt(2))/31
     return star3[Math.floor((Math.random() * star3.length))]
-  } else if (randomNum > 1 / 121) {// (7-3*sqrt(2))/31
+  } else if (randomNum > 1 / 31) {// (7-3*sqrt(2))/31
     return star4[Math.floor((Math.random() * star4.length))]
   } else {
     return star5[Math.floor((Math.random() * star5.length))]
@@ -127,7 +143,7 @@ interface AiboCardProps extends aiboType {
   onClick?: () => void
 }
 
-function AiboCard (props: AiboCardProps) {
+const AiboCard = (props: AiboCardProps) => {
   if (props.id === 0 || !props.star) {
     return <Button variant='contained' disabled className={'cardBase'} onClick={props.onClick}>{'未获得'}</Button>
   }
@@ -157,7 +173,7 @@ function AiboCard (props: AiboCardProps) {
   }
   return (
     <Button variant='outlined' className={'cardBase ' + cardClass} onClick={props.onClick}>
-      {props.name}
+      <div className='cardName'>{props.name}</div>
       <div className='cardStars'>
         {stars}
       </div></Button>
@@ -177,7 +193,7 @@ interface GachaPageProps {
   setAiboRecord: (para: boolean[]) => void
 }
 
-function GachaPage (props: GachaPageProps) {
+const GachaPage = (props: GachaPageProps) => {
   // 确定一次召唤的消耗量，之后应该改成全局的常量
   const gachaCost = 1000
   // 将要召唤的次数
@@ -190,7 +206,7 @@ function GachaPage (props: GachaPageProps) {
   const [showHintBox, setShowHintBox] = useState(false)
 
   // 更改召唤次数
-  function changeGacha (num: number) {
+  const changeGacha = (num: number) => {
     let nowTimes = gachaTimes + num
     if (nowTimes < 0) {nowTimes = 0}// 判断召唤次数不足的情况
     if (nowTimes * gachaCost > props.userDimenstal) {
@@ -201,7 +217,7 @@ function GachaPage (props: GachaPageProps) {
   }
 
   // 随机召唤
-  function onGacha (num: number) {
+  const onGacha = (num: number) => {
     // 首先判断钱是否足够
     let restDimenstal = props.userDimenstal - num * gachaCost
     if (restDimenstal < 0) {
@@ -241,39 +257,37 @@ function GachaPage (props: GachaPageProps) {
   }
 
   return (
-    <div className='boxPageMask'>
-      <div className='largeBoxBody'>
-        {showHintBox && (
-          <div className='component-hint'>
-            <div className='hint-mask'></div>
-            <div className='hint-box'>
-              <div className='hint-content'>次元结晶不足！</div>
-              <div className='hint-close fa fa-close fa-3h' onClick={() => {
-                setShowHintBox(false)
-                setGachaTimes(0)
-                setBonusTimes(0)
-              }}></div>
-            </div>
+    <Paper elevation={10} className='largeBoxBody'>
+      {showHintBox && (
+        <div className='component-hint'>
+          <div className='hint-mask'></div>
+          <div className='hint-box'>
+            <div className='hint-content'>次元结晶不足！</div>
+            <div className='hint-close fa fa-close fa-3h' onClick={() => {
+              setShowHintBox(false)
+              setGachaTimes(0)
+              setBonusTimes(0)
+            }}></div>
           </div>
-        )}
-        <Button variant='outlined' onClick={() => props.setShowGachaPage(false)}>关闭召唤页面</Button>
-        <div>{'召唤一次消耗' + gachaCost + '次元结晶，满十连赠送一次。'}</div>
-        <div>召唤后剩余次元结晶：{props.userDimenstal - gachaTimes * gachaCost}</div>
-        <div>召唤次数：{gachaTimes}{bonusTimes > 0 ? '+' + bonusTimes : null}</div>
-        <div className='gachaTimesOpera'>
-          <Button variant='outlined' onClick={() => {changeGacha(-10)}}>减少十次</Button>
-          <Button variant='outlined' onClick={() => {changeGacha(-1)}}>减少一次</Button>
-          <Button variant='outlined' onClick={() => {changeGacha(1)}}>增加一次</Button>
-          <Button variant='outlined' onClick={() => {changeGacha(10)}}>增加十次</Button>
         </div>
-        <Button variant='outlined' onClick={() => {onGacha(gachaTimes)}}>开始召唤</Button>
-        <div className='gachaResultList'>
-          {gachaResult.map((val: aiboType, ind: number) => <AiboCard
-            key={ind + '-' + val.id/* 这里考虑到diff的效率，用两个字段拼接作为key */}
-            id={val.id} star={val.star} name={val.name} />)}
-        </div>
+      )}
+      <Button variant='outlined' onClick={() => props.setShowGachaPage(false)}>关闭召唤页面</Button>
+      <div>{'召唤一次消耗' + gachaCost + '次元结晶，满十连赠送一次。'}</div>
+      <div>召唤后剩余次元结晶：{props.userDimenstal - gachaTimes * gachaCost}</div>
+      <div>召唤次数：{gachaTimes}{bonusTimes > 0 ? '+' + bonusTimes : null}</div>
+      <div className='gachaTimesOpera'>
+        <Button variant='outlined' onClick={() => {changeGacha(-10)}}>减少十次</Button>
+        <Button variant='outlined' onClick={() => {changeGacha(-1)}}>减少一次</Button>
+        <Button variant='outlined' onClick={() => {changeGacha(1)}}>增加一次</Button>
+        <Button variant='outlined' onClick={() => {changeGacha(10)}}>增加十次</Button>
       </div>
-    </div>
+      <Button variant='outlined' onClick={() => {onGacha(gachaTimes)}}>开始召唤</Button>
+      <div className='gachaResultList'>
+        {gachaResult.map((val: aiboType, ind: number) => <AiboCard
+          key={ind + '-' + val.id/* 这里考虑到diff的效率，用两个字段拼接作为key */}
+          id={val.id} star={val.star} name={val.name} />)}
+      </div>
+    </Paper>
   )
 }
 
@@ -287,11 +301,11 @@ interface AiboChoosePageProps {
   setAiboTeam: (para: number[][]) => void
 }
 
-function AiboChoosePage (props: AiboChoosePageProps) {
+const AiboChoosePage = (props: AiboChoosePageProps) => {
   const [showWarningPage, setShowWarningPage] = useState(false)
 
   // 确定要放进当前队伍人员栏位里的伙伴后执行操作并关闭本页面
-  function setAiboTeamAndClosePage (getAiboId: number) {
+  const setAiboTeamAndClosePage = (getAiboId: number) => {
     let tempAiboTeam = props.aiboTeam
     tempAiboTeam[props.nowChoosenTeam][props.nowChoosenAibo] = getAiboId
     props.setAiboTeam(tempAiboTeam)
@@ -299,22 +313,23 @@ function AiboChoosePage (props: AiboChoosePageProps) {
   }
 
   return (
-    <div className='boxPageMask'>
+    <>
       {showWarningPage && (
         <div className='boxPageMask'>
           <div className='middleBoxBody'>
             <Button variant='outlined' onClick={() => setShowWarningPage(false)}>关闭警告</Button>
             {'队伍中已存在该伙伴'}
           </div>
-        </div>)}
-      <div className='largeBoxBody'>
+        </div>
+      )}
+      <Paper elevation={10} className='largeBoxBody'>
         <Button variant='outlined' onClick={() => props.setShowAiboChoosePage(false)}>关闭选择页面</Button>
         <Button variant='outlined' onClick={() => {
           setAiboTeamAndClosePage(0)
         }}>清除该栏位的伙伴</Button>
-        <div className='aiboList'>
+        <div className='flexStart wrapScroll'>
           {props.aiboStore.map((val) => <AiboCard key={val.aiboId} onClick={() => {
-            // 选择了某张伙伴卡后，首先判断该卡是否已在队伍里面，是的话则弹出警告页面
+          // 选择了某张伙伴卡后，首先判断该卡是否已在队伍里面，是的话则弹出警告页面
             if (props.aiboTeam[props.nowChoosenTeam].find((x) => x === val.aiboId)) {
               setShowWarningPage(true)
             } else {
@@ -322,8 +337,8 @@ function AiboChoosePage (props: AiboChoosePageProps) {
             }
           }} id={val.id} star={val.star} name={val.name} />)}
         </div>
-      </div>
-    </div>
+      </Paper>
+    </>
   )
 }
 
@@ -332,17 +347,15 @@ interface AchievePageProps {
   aiboRecord: boolean[]
 }
 
-function AchievePage (props: AchievePageProps) {
-  return (
-    <div className='pageArea flexWrap'>
-      {props.aiboRecord.map((val, ind) => val ? (
-        <AiboCard key={ind} id={aiboInfo[ind].id} star={aiboInfo[ind].star} name={aiboInfo[ind].name} />
-      ) : (
-        <AiboCard key={ind} id={aiboInfo[ind].id} star={0} name={'未获得'} />
-      ))/* 判断传入的伙伴记录中是否存在某个伙伴，存在则显示名字，反之不显示 */}
-    </div>
-  )
-}
+const AchievePage = (props: AchievePageProps) => (
+  <div className='pageArea flexWrap'>
+    {props.aiboRecord.map((val, ind) => val ? (
+      <AiboCard key={ind} id={aiboInfo[ind].id} star={aiboInfo[ind].star} name={aiboInfo[ind].name} />
+    ) : (
+      <AiboCard key={ind} id={aiboInfo[ind].id} star={0} name={'未获得'} />
+    ))/* 判断传入的伙伴记录中是否存在某个伙伴，存在则显示名字，反之不显示 */}
+  </div>
+)
 
 // 建立房间页面
 interface HomePageProps extends AiboTeamPageProps {
@@ -354,28 +367,115 @@ interface HomePageProps extends AiboTeamPageProps {
   setUserDimenstal: (para: number) => void
 }
 
-function HomePage (props: HomePageProps) {
+const HomePage = (props: HomePageProps) => {
+  // 当前选择的伙伴，用于伙伴详细信息模块
   const [chosenAiboInfo, setChosenAiboInfo] = useState(null)
+  // 新建一个map，用来存放每个伙伴是否被选中的状态
+  const [selectedList, setSelectedList] = useState(new Set())
+  // 用来显示多选框，以及操作栏
+  const [showCheckbox, setShowCheckbox] = useState(false)
+  // 用来显示送别选择的伙伴后获得多少次元水晶
+  const [howManyDimenstal, setHowManyDimenstal] = useState(0)
 
   return (
-    <div className='pageArea'>
+    <div className='pageArea flexRow'>
       {/* 伙伴列表模块 */}
-      <div className='flex-2 flexCol containBorder'>
-        <div className='flex-1 flexCenter borderBottom'>{'拥有伙伴列表'}</div>
-        <div className='flex-15 aiboList'>
-          {props.aiboStore.map((val) => <AiboCard key={val.aiboId} onClick={() => {
-            setChosenAiboInfo(val)
-          }} id={val.id} star={val.star} name={val.name} />)}
+      <div className='flex-1 flexCol height100 containBorder'>
+        <div className='flex-1 flexCenter borderBottom'>
+          {'拥有伙伴列表'}
+          <Button variant='contained' onClick={() => {
+            // 点击显示或隐藏多选框
+            setShowCheckbox(!showCheckbox)
+            // 重置“送别选择的伙伴后获得的次元水晶”
+            setHowManyDimenstal(0)
+          }}>编辑</Button>
+        </div>
+        {/* 显示操作栏 */}
+        {showCheckbox && (<div className='flex-1 flexCenter borderBottom'>
+          <Button variant='contained' onClick={() => {
+          // 惜别当前选定的伙伴
+            props.setAiboStore(props.aiboStore.filter((x) => !selectedList.has(x.aiboId)))
+            // 增加当前的次元水晶
+            props.setUserDimenstal(props.userDimenstal + howManyDimenstal)
+            // 重置“送别选择的伙伴后获得的次元水晶”
+            setHowManyDimenstal(0)
+            // 重置多选框
+            setSelectedList(new Set())
+          }}>{`送别所选伙伴，返还${howManyDimenstal}次元结晶`}</Button>
+          <Button variant='contained' onClick={() => {
+            let selectedListTemp = selectedList
+            let howManyDimenstalTemp = howManyDimenstal
+            props.aiboStore.forEach((val) => {
+              if (val.star === 1 && !selectedListTemp.has(val.aiboId)) {
+                selectedListTemp.add(val.aiboId)
+                howManyDimenstalTemp = howManyDimenstalTemp + val.dimenstal
+              }
+            })
+            setSelectedList(selectedListTemp)
+            setHowManyDimenstal(howManyDimenstalTemp)
+          }}>选择所有一星同伴</Button>
+          <Button variant='contained' onClick={() => {
+            let selectedListTemp = selectedList
+            let howManyDimenstalTemp = howManyDimenstal
+            props.aiboStore.forEach((val) => {
+              if (val.star === 2 && !selectedListTemp.has(val.aiboId)) {
+                selectedListTemp.add(val.aiboId)
+                howManyDimenstalTemp = howManyDimenstalTemp + val.dimenstal
+              }
+            })
+            setSelectedList(selectedListTemp)
+            setHowManyDimenstal(howManyDimenstalTemp)
+          }}>选择所有两星同伴</Button>
+          <SortButton
+            buttonName='按星级排序'
+            sortAttr='star'
+            aiboStore={props.aiboStore}
+            setAiboStore={props.setAiboStore}
+          />
+        </div>)}
+        <div className='flex-15 flexStart wrapScroll'>
+          {props.aiboStore.map((val, ind) =>
+            <div key={val.aiboId}>
+              {/* 给每个伙伴建立多选框 */showCheckbox && (
+                <Checkbox
+                  checked={selectedList.has(val.aiboId)}
+                  onChange={() => {
+                    let selectedListTemp = selectedList
+                    if (selectedListTemp.has(val.aiboId)) {
+                      selectedListTemp.delete(val.aiboId)
+                      val.dimenstal && setHowManyDimenstal(howManyDimenstal - val.dimenstal)
+                    } else {
+                      selectedListTemp.add(val.aiboId)
+                      val.dimenstal && setHowManyDimenstal(howManyDimenstal + val.dimenstal)
+                    }
+                    setSelectedList(selectedListTemp)
+
+                    /* setHowManyDimenstal(
+                      props.aiboStore.reduce((allDS, nowAibo) => {
+                        if (nowAibo.dimenstal && selectedList.has(nowAibo.aiboId)) {
+                          return allDS + nowAibo.dimenstal
+                        } else {
+                          return allDS
+                        }
+                      }, 0)
+                    ) */
+                  }}
+                  inputProps={{ 'aria-label': 'primary checkbox' }}
+                />
+              )}
+              <AiboCard onClick={() => {
+                setChosenAiboInfo(val)
+              }} id={val.id} star={val.star} name={val.name} />
+            </div>)}
         </div>
       </div>
-      <div className='flex-3 flexCol'>
+      <div className='flex-1 flexCol height100'>
         {/* 伙伴详细信息模块 */}
-        <div className='flex-3 aiboList containBorder'>
+        <div className='flex-3 flexStart wrapScroll containBorder'>
           {chosenAiboInfo /* 先判断是否选择了某个伙伴，否则仅显示提示 */
             ? <AiboInfoPage chosenAiboInfo={chosenAiboInfo} deleteAibo={() => {
-              // 惜别当前选定的元素
-              let tempAiboStore = props.aiboStore.filter((x) => x.aiboId !== chosenAiboInfo.aiboId)
-              props.setAiboStore(tempAiboStore)
+              // 惜别当前选定的伙伴
+              props.setAiboStore(props.aiboStore.filter((x) => x.aiboId !== chosenAiboInfo.aiboId))
               // 增加当前的次元水晶
               props.setUserDimenstal(props.userDimenstal + chosenAiboInfo.dimenstal)
               // 关闭当前信息页面
@@ -385,7 +485,7 @@ function HomePage (props: HomePageProps) {
           }
         </div>
         {/* 伙伴队伍模块 */}
-        <div style={{ flex: 1 }}>
+        <div className='flex-2 width100 wrapScroll'>
           <AiboTeamPage
             aiboStore={props.aiboStore}
             aiboTeam={props.aiboTeam}
@@ -400,29 +500,54 @@ function HomePage (props: HomePageProps) {
   )
 }
 
+// 排序按钮
+interface SortButtonProps {
+  buttonName: string,
+  sortAttr: string,
+  aiboStore: userAiboType[],
+  setAiboStore: (para: userAiboType[]) => void
+}
+
+const SortButton = (props: SortButtonProps) => {
+  const [isReverse, setIsReverse] = useState(false)
+
+  return (
+    <Button variant='contained' onClick={() => {
+      let aiboStoreTemp = props.aiboStore
+      props.sortAttr === 'star' && (() => {
+        console.log(isReverse)
+        isReverse
+          ? aiboStoreTemp.sort((a, b) => (a.star && b.star) ? (b.star - a.star) : 0)
+          : aiboStoreTemp.sort((a, b) => (a.star && b.star) ? (a.star - b.star) : 0)
+      })()
+      console.log(aiboStoreTemp[0])
+      setIsReverse(!isReverse)
+      props.setAiboStore(aiboStoreTemp)
+    }}>{props.buttonName}</Button>
+  )
+}
+
 // 伙伴信息页面
 interface AiboInfoPageProps {
   chosenAiboInfo: userAiboType,
   deleteAibo: () => void
 }
 
-function AiboInfoPage (props: AiboInfoPageProps) {
-  return (
-    props.chosenAiboInfo && (<div>
-      <div>名字：{props.chosenAiboInfo.name}</div>
-      <div>等级：{props.chosenAiboInfo.level}</div>
-      <div>经验：{props.chosenAiboInfo.exp}</div>
-      <div>星级：{props.chosenAiboInfo.star}</div>
-      <div>属性：{props.chosenAiboInfo.elements}</div>
-      <div>能力1：{props.chosenAiboInfo.ab1 || '无'}</div>
-      <div>能力2：{props.chosenAiboInfo.ab2 || '无'}</div>
-      <div>生命：{props.chosenAiboInfo.hp}</div>
-      <div>攻击：{props.chosenAiboInfo.atk}</div>
-      <div>防御：{props.chosenAiboInfo.def}</div>
-      <Button variant='outlined' onClick={props.deleteAibo}>{'惜别当前伙伴：返还' + props.chosenAiboInfo.dimenstal + '次元结晶'}</Button>
-    </div>)
-  )
-}
+const AiboInfoPage = (props: AiboInfoPageProps) => (
+  props.chosenAiboInfo && (<div>
+    <div>名字：{props.chosenAiboInfo.name}</div>
+    <div>等级：{props.chosenAiboInfo.level}</div>
+    <div>经验：{props.chosenAiboInfo.exp}</div>
+    <div>星级：{props.chosenAiboInfo.star}</div>
+    <div>属性：{props.chosenAiboInfo.elements}</div>
+    <div>能力1：{props.chosenAiboInfo.ab1 || '无'}</div>
+    <div>能力2：{props.chosenAiboInfo.ab2 || '无'}</div>
+    <div>生命：{props.chosenAiboInfo.hp}</div>
+    <div>攻击：{props.chosenAiboInfo.atk}</div>
+    <div>防御：{props.chosenAiboInfo.def}</div>
+    <Button variant='outlined' onClick={props.deleteAibo}>{'惜别当前伙伴：返还' + props.chosenAiboInfo.dimenstal + '次元结晶'}</Button>
+  </div>)
+)
 
 // 伙伴队伍模块（用于房间和地图两个页面）
 interface AiboTeamPageProps {
@@ -434,83 +559,165 @@ interface AiboTeamPageProps {
   setNowChoosenTeam: (para: number) => void
 }
 
-function AiboTeamPage (props: AiboTeamPageProps) {
-  return (
-    <div className='flexCol containBorder'>
-      <div className='flex-1 flexCenter borderBottom'>{'队伍列表'}</div>
-      <div className='flex-7 aiboList'>
-        {props.aiboTeam.map((teamVal, teamInd) => <div key={teamInd}>
-          {`队伍：${teamInd + 1}${props.nowChoosenTeam === teamInd ? '（已选中）' : ''}：`}
-          {teamVal.map((aiboVal, aiboInd) => {
-            let chara = props.aiboStore.find((x) => x.aiboId === aiboVal)
-            return (
-              <Button variant='outlined' key={aiboInd} onClick={() => {
-                props.setNowChoosenTeam(teamInd)
-                props.setNowChoosenAibo(aiboInd)
-                props.setShowAiboChoosePage(true)
-              }}>{'队员' + (aiboInd + 1) + '：' + (chara?.name/* 链式判断 */ || '无')}</Button>
-            )
-          })}
-        </div>)}
-        {props.aiboTeam.map((teamVal, teamInd) => <div key={teamInd}>
-          {`队伍：${teamInd + 1}${props.nowChoosenTeam === teamInd ? '（已选中）' : ''}：`}
-          {teamVal.map((aiboVal, aiboInd) => {
-            let chara = props.aiboStore.find((x) => x.aiboId === aiboVal)
-            return (
-              <Button variant='outlined' key={aiboInd} onClick={() => {
-                props.setNowChoosenTeam(teamInd)
-                props.setNowChoosenAibo(aiboInd)
-                props.setShowAiboChoosePage(true)
-              }}>{'队员' + (aiboInd + 1) + '：' + (chara?.name/* 链式判断 */ || '无')}</Button>
-            )
-          })}
-        </div>)}
-        {props.aiboTeam.map((teamVal, teamInd) => <div key={teamInd}>
-          {`队伍：${teamInd + 1}${props.nowChoosenTeam === teamInd ? '（已选中）' : ''}：`}
-          {teamVal.map((aiboVal, aiboInd) => {
-            let chara = props.aiboStore.find((x) => x.aiboId === aiboVal)
-            return (
-              <Button variant='outlined' key={aiboInd} onClick={() => {
-                props.setNowChoosenTeam(teamInd)
-                props.setNowChoosenAibo(aiboInd)
-                props.setShowAiboChoosePage(true)
-              }}>{'队员' + (aiboInd + 1) + '：' + (chara?.name/* 链式判断 */ || '无')}</Button>
-            )
-          })}
-        </div>)}
-      </div>
+const AiboTeamPage = (props: AiboTeamPageProps) => (
+  <div className='flexCol width100 height100 containBorder'>
+    <div className='flex-1 flexCenter borderBottom'>{'队伍列表'}</div>
+    <div className='flex-7 flexStart wrapScroll'>
+      {props.aiboTeam.map((teamVal, teamInd) => <div key={teamInd} className='teamBorder'>
+        {`队伍：${teamInd + 1}${props.nowChoosenTeam === teamInd ? '（已选中）' : ''}：`}
+        {teamVal.map((aiboVal, aiboInd) => {
+          let chara = props.aiboStore.find((x) => x.aiboId === aiboVal)
+          return (
+            <Button variant='outlined' key={aiboInd} onClick={() => {
+              props.setNowChoosenTeam(teamInd)
+              props.setNowChoosenAibo(aiboInd)
+              props.setShowAiboChoosePage(true)
+            }}>{'队员' + (aiboInd + 1) + '：' + (chara?.name/* 链式判断 */ || '无')}</Button>
+          )
+        })}
+      </div>)}
     </div>
-  )
-}
+  </div>
+)
 
 // 建立城镇页面
 interface MarketPageProps {
   setShowGachaPage: (para: boolean) => void,
 }
 
-function MarketPage (props: MarketPageProps) {
+const MarketPage = (props: MarketPageProps) => (
+  <div className='pageArea'>
+    <Button variant='outlined' className='marginAuto' onClick={() => {props.setShowGachaPage(true)}}>召唤</Button>
+  </div>
+)
+
+// 建立地图页面
+interface MapPageProps extends QuestComponentProps, AiboTeamPageProps {
+  setNowArea: (para: number) => void
+}
+
+const MapPage = (props: MapPageProps) => (
+  <div className='pageArea flexRow'>
+    {/* 地区列表模块 */}
+    <div className='flex-1 flexCol height100 containBorder'>
+      <div className='flex-1 flexCenter borderBottom'>{'地区列表'}</div>
+      <div className='flex-15 flexStart wrapScroll'>
+        {mapInfo[0].areas.map((val) => (
+          val.quests[0].id/* 这个值即为当前地区中第一个关卡的id */ > props.clearedQuest/* 判断其是否大于用户已完成的进度 */ ? null : (
+            <div key={val.index} className='areaDiv' onClick={() => {props.setNowArea(val.index)}}>{val.name}</div>
+          )
+        ))}
+      </div>
+    </div>
+    {/* 地区关卡模块与队伍模块 */}
+    <div className='flex-3 flexCol height100'>
+      {/* 地区关卡模块 */}
+      <div className='flex-3 flexStart wrapScroll containBorder'>
+        {mapInfo[0].areas[props.nowArea].quests.map((val) => (
+          val.id/* 这个值即为当前关卡的id */ > props.clearedQuest/* 判断其是否大于用户已完成的进度 */ ? null : <QuestComponent
+            key={val.index}
+            questInfo={val}
+            nowArea={props.nowArea}
+            mapRecordEasy={props.mapRecordEasy}
+            setMapRecordEasy={props.setMapRecordEasy}
+            clearedQuest={props.clearedQuest}
+            setClearedQuest={props.setClearedQuest}
+            questProgress={props.questProgress}
+            setQuestProgress={props.setQuestProgress}
+            userDimenstal={props.userDimenstal}
+            setUserDimenstal={props.setUserDimenstal}
+          />
+        ))}
+      </div>
+      {/* 伙伴队伍模块 */}
+      <div className='flex-1 width100 wrapScroll'>
+        <AiboTeamPage
+          aiboStore={props.aiboStore}
+          aiboTeam={props.aiboTeam}
+          nowChoosenTeam={props.nowChoosenTeam}
+          setShowAiboChoosePage={props.setShowAiboChoosePage}
+          setNowChoosenAibo={props.setNowChoosenAibo}
+          setNowChoosenTeam={props.setNowChoosenTeam}
+        />
+      </div>
+    </div>
+  </div>
+)
+
+// 建立每个quest的组件
+interface QuestComponentProps {
+  nowArea: number,
+  mapRecordEasy: boolean[][][],
+  setMapRecordEasy: (para: boolean[][][]) => void,
+  clearedQuest: number,
+  setClearedQuest: (para: number) => void,
+  questProgress: number[][][],
+  setQuestProgress: (para: number[][][]) => void,
+  userDimenstal: number,
+  setUserDimenstal: (para: number) => void
+}
+
+const QuestComponent = (props: QuestComponentProps & { questInfo: questType }) => {// 类型，在MapPage流传下来的类型上再加上MapPage自己给过来的类型questType
+  const [nowProgress, setNowProgress] = useState(props.questProgress[0][props.nowArea][props.questInfo.index])
+
+  const setNowRecordEasy = (indexArea: number, indexQuest: number) => {
+    if (!props.mapRecordEasy[0][indexArea][indexQuest]) {
+      let mapRecordEasyTemp = props.mapRecordEasy
+      mapRecordEasyTemp[0][indexArea][indexQuest] = true
+      props.setMapRecordEasy(mapRecordEasyTemp)
+    }
+  }
+
   return (
-    <div className='pageArea'>
-      <Button variant='outlined' className='marginAuto' onClick={() => {props.setShowGachaPage(true)}}>召唤</Button>
+    <div className='areaDiv' onClick={() => {
+    // 点击关卡，判断当前关卡是否已经处在闯关过程中
+      if (nowProgress < 0) {
+      // 如果未在闯关过程中，则显示一个闯关过程，进度条完成后返回成功失败的结果
+        setNowProgress(0)
+        const timer = setInterval(() => {
+          setNowProgress(nowProgress >= 100 ? (() => {
+            setNowProgress(-1)
+            console.log('进度条完成')
+            clearInterval(timer)
+            return 100
+          })() : (() => {
+            console.log(nowProgress)
+            let willProgress = nowProgress + Math.random() * 10
+            return willProgress > 100 ? 100 : willProgress
+          })())
+        }, 300)
+      }
+      // 先默认成功，成功后设置次元结晶、经验、清关标志位等
+      props.setUserDimenstal(props.userDimenstal + props.questInfo.gold)
+      props.clearedQuest === props.questInfo.id && props.setClearedQuest(props.clearedQuest + 1)
+    }}>
+      {props.questInfo.name}
+      {
+        props.mapRecordEasy[0][props.nowArea][props.questInfo.index] && <Avatar>完成</Avatar>// 显示完成图标
+      }
+      {(nowProgress > -1) && <div>{`----当前进度${Math.round(nowProgress * 100) / 100}%`}</div>
+      /* <ProgressLabel
+        nowProgress={0}
+        setNowProgress={(nowProgress: number) => setNowProgress(props.questInfo.index, nowProgress)}
+        setNowRecordEasy={() => setNowRecordEasy(props.nowArea, props.questInfo.index)}
+      /> */}
     </div>
   )
 }
 
 // 进度条组件
-function LinearProgressWithLabel (props: LinearProgressProps & { value: number }) {
-  return (
-    <Box display="flex" alignItems="center">
-      <Box width="100%" mr={1}>
-        <LinearProgress variant="determinate" {...props} />
-      </Box>
-      <Box minWidth={35}>
-        <Typography variant="body2" color="textSecondary">{`${Math.round(
-          props.value
-        )}%`}</Typography>
-      </Box>
+const LinearProgressWithLabel = (props: LinearProgressProps & { value: number }) => (
+  <Box display="flex" alignItems="center">
+    <Box width="100%" mr={1}>
+      <LinearProgress variant="determinate" {...props} />
     </Box>
-  )
-}
+    <Box minWidth={35}>
+      <Typography variant="body2" color="textSecondary">{`${Math.round(
+        props.value
+      )}%`}</Typography>
+    </Box>
+  </Box>
+)
 
 // 处理进度条的显示
 interface ProgressLabelProps {
@@ -519,16 +726,16 @@ interface ProgressLabelProps {
   setNowRecordEasy: () => void
 }
 
-function ProgressLabel (props: ProgressLabelProps) {
+const ProgressLabel = (props: ProgressLabelProps) => {
   useEffect(() => {
     const timer = setInterval(() => {
-      props.setNowProgress(props.nowProgress >= 100 ? (function () {
+      props.setNowProgress(props.nowProgress >= 100 ? (() => {
         props.setNowProgress(-1)
         props.setNowRecordEasy()
         console.log('进度条完成')
         clearInterval(timer)
         return 100
-      })() : (function () {
+      })() : (() => {
         let willProgress = props.nowProgress + Math.random() * 10
         return willProgress > 100 ? 100 : willProgress
       })())
@@ -545,99 +752,12 @@ function ProgressLabel (props: ProgressLabelProps) {
   )
 }
 
-// 建立地图页面
-interface MapPageProps extends AiboTeamPageProps {
-  nowArea: number,
-  setNowArea: (para: number) => void,
-  mapRecordEasy: boolean[][][],
-  setMapRecordEasy: (para: boolean[][][]) => void,
-  clearedQuest: number,
-  setClearedQuest: (para: number) => void,
-  questProgress: number[][][],
-  setQuestProgress: (para: number[][][]) => void,
-  userDimenstal: number,
-  setUserDimenstal: (para: number) => void
-}
-
-function MapPage (props: MapPageProps) {
-  function setNowProgress (index: number, newProgress: number) {
-    let questProgressTemp = props.questProgress
-    questProgressTemp[0][props.nowArea][index] = newProgress
-    props.setQuestProgress(questProgressTemp)
-    console.log('变' + props.questProgress[0][props.nowArea][index] + '了')
-  }
-
-  function setNowRecordEasy (indexArea: number, indexQuest: number) {
-    if (!props.mapRecordEasy[0][indexArea][indexQuest]) {
-      let mapRecordEasyTemp = props.mapRecordEasy
-      mapRecordEasyTemp[0][indexArea][indexQuest] = true
-      props.setMapRecordEasy(mapRecordEasyTemp)
-    }
-  }
-
-  return (
-    <div className='pageArea'>
-      {/* 地区列表模块 */}
-      <div className='flex-1 flexCol containBorder'>
-        <div className='flex-1 flexCenter borderBottom'>{'地区列表'}</div>
-        <div className='flex-15 aiboList'>
-          {mapInfo[0].areas.map((val) => (
-            val.quests[0].id/* 这个值即为当前地区中第一个关卡的id */ > props.clearedQuest/* 判断其是否大于用户已完成的进度 */ ? null : (
-              <div key={val.index} className='areaDiv' onClick={() => {props.setNowArea(val.index)}}>{val.name}</div>
-            )
-          ))}
-        </div>
-      </div>
-      {/* 地区关卡模块与队伍模块 */}
-      <div className='flex-3 flexCol'>
-        {/* 地区关卡模块 */}
-        <div className='flex-3 aiboList containBorder'>
-          {mapInfo[0].areas[props.nowArea].quests.map((val) => (
-            val.id/* 这个值即为当前关卡的id */ > props.clearedQuest/* 判断其是否大于用户已完成的进度 */ ? null : (
-              <div key={val.index} className='areaDiv' onClick={() => {
-              // 点击关卡，判断当前关卡是否已经处在闯关过程中
-                if (props.questProgress[0][props.nowArea][val.index] < 0) {
-                // 如果未在闯关过程中，则显示一个闯关过程，进度条完成后返回成功失败的结果
-                  setNowProgress(val.index, 0)
-                }
-                // 先默认成功，成功后设置次元结晶、经验、清关标志位等
-                props.setUserDimenstal(props.userDimenstal + val.gold)
-                props.clearedQuest === val.id && props.setClearedQuest(props.clearedQuest + 1)
-              }}>{val.name}
-                {/* {
-                props.mapRecordEasy[0][props.nowArea][val.index] && <Avatar>完成</Avatar>// 显示完成图标
-              }
-              {(props.questProgress[0][props.nowArea][val.index] > -1) && <ProgressLabel
-                nowProgress={0}
-                setNowProgress={(nowProgress: number) => setNowProgress(val.index, nowProgress)}
-                setNowRecordEasy={() => setNowRecordEasy(props.nowArea, val.index)}
-              />} */}
-              </div>
-            )
-          ))}
-        </div>
-        {/* 伙伴队伍模块 */}
-        <div style={{ flex: 1 }}>
-          <AiboTeamPage
-            aiboStore={props.aiboStore}
-            aiboTeam={props.aiboTeam}
-            nowChoosenTeam={props.nowChoosenTeam}
-            setShowAiboChoosePage={props.setShowAiboChoosePage}
-            setNowChoosenAibo={props.setNowChoosenAibo}
-            setNowChoosenTeam={props.setNowChoosenTeam}
-          />
-        </div>
-      </div>
-    </div>
-  )
-}
-
 // 建立底部导航栏
 interface NavigationProps {
   setTogglePage: (para: boolean[]) => void
 }
 
-function Navigation (props: NavigationProps) {
+const Navigation = (props: NavigationProps) => {
   const [value, setValue] = useState('recents')
 
   const handleChange = (event: any, newValue: any) => {
@@ -667,7 +787,7 @@ function Navigation (props: NavigationProps) {
   )
 }
 
-function App () {
+const App = () => {
   // 首先从缓存中读出历史数据，如果没有缓存，则使用初始值
   /* 不再添加变量后再用这个
   const [
@@ -750,33 +870,33 @@ function App () {
 
   return (
     <div className='App'>
-      {/* 个人信息栏 */}
-      <div className='infoBar'>
-        {'当前拥有的次元结晶：' + userDimenstal}
-      </div>
       {/* 用于弹出的页面 */}
-      <div>
+      {(showGachaPage || showAiboChoosePage) && <div className='boxPageMask'>
         {/* 召唤页面 */}
-        {showGachaPage && (<GachaPage
-          userDimenstal={userDimenstal}
-          setUserDimenstal={setUserDimenstal}
-          setShowGachaPage={setShowGachaPage}
-          aiboStore={aiboStore}
-          setAiboStore={setAiboStore}
-          aiboNum={aiboNum}
-          setAiboNum={setAiboNum}
-          aiboRecord={aiboRecord}
-          setAiboRecord={setAiboRecord}
-        />)}
+        {showGachaPage && (<div>
+          <GachaPage
+            userDimenstal={userDimenstal}
+            setUserDimenstal={setUserDimenstal}
+            setShowGachaPage={setShowGachaPage}
+            aiboStore={aiboStore}
+            setAiboStore={setAiboStore}
+            aiboNum={aiboNum}
+            setAiboNum={setAiboNum}
+            aiboRecord={aiboRecord}
+            setAiboRecord={setAiboRecord}
+          />
+        </div>)}
         {/* 选择伙伴页面 */}
-        {showAiboChoosePage && (<AiboChoosePage
-          aiboStore={aiboStore}
-          setShowAiboChoosePage={setShowAiboChoosePage}
-          nowChoosenAibo={nowChoosenAibo}
-          nowChoosenTeam={nowChoosenTeam}
-          aiboTeam={aiboTeam}
-          setAiboTeam={setAiboTeam}
-        />)}
+        {showAiboChoosePage && (<div>
+          <AiboChoosePage
+            aiboStore={aiboStore}
+            setShowAiboChoosePage={setShowAiboChoosePage}
+            nowChoosenAibo={nowChoosenAibo}
+            nowChoosenTeam={nowChoosenTeam}
+            aiboTeam={aiboTeam}
+            setAiboTeam={setAiboTeam}
+          />
+        </div>)}
         {/* 惜别伙伴页面 */}
         {/* {showAiboDeletePage && (<AiboDeletePage
           aiboStore={aiboStore}
@@ -785,6 +905,10 @@ function App () {
           aiboTeam={aiboTeam}
           setAiboTeam={setAiboTeam}
         />)} */}
+      </div>}
+      {/* 个人信息栏 */}
+      <div className='infoBar'>
+        {'当前拥有的次元结晶：' + userDimenstal}
       </div>
       {/* 显示的页面主体 */}
       <div className='pageContain'>
@@ -832,6 +956,28 @@ function App () {
       </div>
     </div>
   )
+}
+
+const App2 = () => {
+  const [isInterval, setIsInterval] = useState(false)// 是否在计数状态
+  const [nowProgress, setNowProgress] = useState(0)// 当前计数的值
+  const ref = useRef()
+
+  return (<>
+    <Button onClick={() => {
+      if (!isInterval) {
+        ref.current = setInterval(() => {
+          console.log(`值为：${nowProgress}`)
+          setNowProgress(nowProgress + 10)
+        }, 500)
+        setIsInterval(true)
+      } else {
+        clearInterval(ref.current)
+        setIsInterval(false)
+      }
+    }}>{isInterval ? '停止计时' : '开始计时'}</Button>
+    <div>{`当前值为：${nowProgress}`}</div>
+  </>)
 }
 
 export default App

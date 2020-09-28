@@ -51,16 +51,45 @@
   margin: auto!important;
 }
 
+.width100 {
+  width: 100%;
+}
+
+.height100 {
+  height: 100%;
+}
+
 /* 用来给事物在容器内垂直水平居中 */
 .flexCenter {
   display: flex;
-  align-items: center;/* flex水平居中 */
+  align-items: center;/* flex水平居中（子项在侧轴上居中） */
   justify-content: center;/* flex垂直居中 */
+}
+
+.flexStart {
+  display: flex;
+  align-content: flex-start;/* 主轴顶端对齐（主轴在侧轴上从上到下排） */
+  justify-content: center;/* flex垂直居中 */
+}
+
+.wrapScroll {
+  display: flex;
+  flex-wrap: wrap;
+  overflow: scroll;
 }
 
 .flexCol {
   display: flex;
   flex-direction: column;
+}
+
+.flexRow {
+  display: flex;
+  flex-direction: row;
+}
+
+.flexWrap {
+  flex-wrap: wrap;/* 排满换行 */
 }
 
 .flex-1 {
@@ -85,9 +114,10 @@
 
 /* 设置展示用的列表 */
 .containBorder {
+  width: calc(100% - 2px);
   height: calc(100% - 2px);
   border: solid 1px gray;
-  border-radius: 2rem;
+  border-radius: 1rem;
   display: flex;
 }
 
@@ -95,52 +125,14 @@
   border-bottom: solid 1px gray;
 }
 
-.aiboList {
+// 队伍框的边框
+.teamBorder {
+  width: calc(100% - 2px);
+  border: solid 1px gray;
+  border-radius: 0.5rem;
   display: flex;
-  align-content: flex-start;/* 主轴顶端对齐 */
-  justify-content: center;/* flex垂直居中 */
-  flex-wrap: wrap;
-  width: 100%;
-  overflow: scroll;
-}
-
-/* 设置进度条 */
-.progressWrap {
-  margin: 6px 3px;
-  display: inline-flex;
-  align-items: center;
-  .progressBar {
-    position: relative;
-    display: inline-block;
-    height: 10px;
-    background-color: #f0f0f0;
-    border-radius: 5px;
-    overflow: hidden;
-    .progressInnerBar {
-      position: absolute;
-      height: 100%;
-    }
-  }
-  .progressText {
-    margin-left: 6px;
-    margin-top: -2px;
-    font-size: 14px;
-  }
-}
-
-/* 按钮的设置 */
-.buttonContain {
-  margin: auto;
-  display: flex;
-  align-items: center;/*flex水平居中*/
-  justify-content: center;/*flex垂直居中*/
-  padding: 0.3rem;
-}
-
-.button {
-  padding: 0.2rem;
-  border: solid 1px black;
-  border-radius: 0.3rem;
+  justify-content: space-around;
+  margin: 0.2rem;
 }
 
 /* 顶部：个人信息栏，以及底部：导航栏 */
@@ -169,10 +161,6 @@
   justify-content: center;/*flex垂直居中*/
 }
 
-.flexWrap {
-  flex-wrap: wrap;/* 排满换行 */
-}
-
 /* 设置弹出页面的遮罩层 */
 .boxPageMask {
   position: fixed;
@@ -180,8 +168,8 @@
   bottom: 0;
   left: 0;
   right: 0;
-  z-index: 64;
-  background: rgba(0, 0, 0, 0.7);
+  z-index: 32;
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;/*flex水平居中*/
   justify-content: center;/*flex垂直居中*/
@@ -189,9 +177,9 @@
 
 /* 较大的弹出页面 */
 .largeBoxBody {
-  width: 80%;
-  height: 80%;
-  background-color: white;
+  width: 80vw;
+  height: 80vh;
+  background-color: ghostwhite!important;
   border: solid 1px black;
   border-radius: 2rem;
   overflow: scroll;
@@ -199,9 +187,9 @@
 
 /* 适中的弹出页面 */
 .middleBoxBody {
-  width: 40%;
-  height: 40%;
-  background-color: white;
+  width: 40vw;
+  height: 40vh;
+  background-color: ghostwhite;
   border: solid 1px black;
   border-radius: 2rem;
   overflow: scroll;
@@ -230,8 +218,19 @@
 .cardBase {
   position: relative;
   margin: 0.5rem!important;
-  width: 9rem!important;
+  width: 8.5rem!important;
   height: 2.5rem!important;
+}
+
+.cardName {
+  position: absolute;
+  top: 0.3rem;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;/*flex水平居中*/
+  justify-content: center;/*flex垂直居中*/
 }
 
 /* 标识人物卡上的星级 */
@@ -239,7 +238,6 @@
   position: absolute;
   top: 0;
   left: 0;
-  height: 0.7rem;
   display: flex;
   align-items: center;/*flex水平居中*/
   justify-content: center;/*flex垂直居中*/
@@ -266,7 +264,7 @@
 .cardLevel2 {
   color: sienna!important;
   /* text-shadow: 1px 0px 2px cyan!important; */
-  border: solid 1px gray!important;
+  border: solid 1px sienna!important;
 }
 
 .cardLevel1 {

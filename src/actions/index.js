@@ -10,3 +10,7 @@ export const toggleText = (id) => ({
   type: 'TOGGLE_TEXT',
   id
 })
+
+export const setUserDimenstal = (para) => ({ type: 'setUserDimenstal', neo: para })
+
+export const setAiboStore = (para) => ({ type: 'setAiboStore', neo: para })

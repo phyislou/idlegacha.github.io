@@ -808,7 +808,7 @@ const App = () => {
     JSON.parse(localStorage.getItem('aiboNum') as string),
     JSON.parse(localStorage.getItem('aiboRecord') as string)
   ] */
-  const userDimenstalHistory = localStorage.getItem('userDimenstal') === null ? 50000 : JSON.parse(localStorage.getItem('userDimenstal') as string)
+  const userDimenstalHistory = localStorage.getItem('userDimenstal') === null ? 0 : JSON.parse(localStorage.getItem('userDimenstal') as string)
   const aiboStoreHistory = localStorage.getItem('aiboStore') === null ? [] : JSON.parse(localStorage.getItem('aiboStore') as string)
   const aiboNumHistory = localStorage.getItem('aiboNum') === null ? 0 : JSON.parse(localStorage.getItem('aiboNum') as string)
   const aiboRecordHistory = localStorage.getItem('aiboRecord') === null ? [...Array(aiboInfo.length)].map(() => false) : JSON.parse(localStorage.getItem('aiboRecord') as string)
@@ -1028,7 +1028,7 @@ const ShowText = connect(
   (state: any) => ({
     text: state.text
   }),
-  // UI组件的行为作为action，由dispatch来更新state
+  // UI组件的行为作为action，通过dispatch来更新state
   (dispatch: any) => ({
     toggleText: (id: any) => dispatch(toggleText(id))
   })

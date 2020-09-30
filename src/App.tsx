@@ -1,4 +1,9 @@
 import React, { useState, useEffect, useRef, Suspense } from 'react'
+import { connect } from 'react-redux'
+import {
+  setText,
+  toggleText
+} from './actions'
 import './App.less'
 import './css/font-awesome.css'
 import { aiboInfo, mapInfo, mapRecordInitEasy, questProgressInit } from './staticData'
@@ -21,12 +26,14 @@ import {
 } from '@material-ui/core'
 import { Theme, createStyles, makeStyles } from '@material-ui/core/styles'
 import { LinearProgressProps } from '@material-ui/core/LinearProgress'
-import InfoIcon from '@material-ui/icons/Info'
-import StarRateIcon from '@material-ui/icons/StarRate'
-import CollectionsBookmarkIcon from '@material-ui/icons/CollectionsBookmark'
-import HomeIcon from '@material-ui/icons/Home'
-import LocationCityIcon from '@material-ui/icons/LocationCity'
-import MapIcon from '@material-ui/icons/Map'
+import {
+  Info as InfoIcon,
+  StarRate as StarRateIcon,
+  CollectionsBookmark as CollectionsBookmarkIcon,
+  Home as HomeIcon,
+  LocationCity as LocationCityIcon,
+  Map as MapIcon
+} from '@material-ui/icons'
 import Img from './1.jpg'
 import { prependOnceListener } from 'process'
 
@@ -958,7 +965,7 @@ const App = () => {
   )
 }
 
-const App2 = () => {
+const App3 = () => {
   const [isInterval, setIsInterval] = useState(false)// 是否在计数状态
   const [nowProgress, setNowProgress] = useState(0)// 当前计数的值
   const ref = useRef()
@@ -980,4 +987,72 @@ const App2 = () => {
   </>)
 }
 
-export default App
+const SetText = connect()(({ dispatch }: any) => {
+  let input: any
+
+  return (
+    <div>
+      <form onSubmit={(e) => {
+        e.preventDefault()
+        if (!input.value.trim()) {
+          return
+        }
+        dispatch(setText(input.value))
+        input.value = ''
+      }}>
+        <input ref={
+          // eslint-disable-next-line no-return-assign
+          (node) => input = node
+        } />
+        <button type="submit">
+          Set Text
+        </button>
+      </form>
+    </div>
+  )
+})
+
+const Text = (props: {
+  onClick: () => void,
+  text: string
+}) => (
+  <li
+    onClick={props.onClick}
+  >
+    {props.text}
+  </li>
+)
+
+const ShowText = connect(
+  // 用state来更新UI组件
+  (state: any) => ({
+    text: state.text
+  }),
+  // UI组件的行为作为action，由dispatch来更新state
+  (dispatch: any) => ({
+    toggleText: (id: any) => dispatch(toggleText(id))
+  })
+)((
+  // UI组件本体，输入参数由上面两个函数的输出决定
+  text: { id: number, completed: boolean, text: string }[],
+  toggleText: (id: any) => void
+) => (
+  <ul>
+    {text?.map ? text.map((val) => (
+      <Text
+        key={val.id}
+        {...val}
+        onClick={() => toggleText(val.id)}
+      />
+    )) : 'nullval'}
+  </ul>
+))
+
+const App4 = () => (
+  <div>
+    <SetText />
+    <ShowText />
+  </div>
+)
+
+export default App4

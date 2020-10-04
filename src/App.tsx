@@ -2,7 +2,19 @@ import React, { useState, useEffect, useRef, Suspense } from 'react'
 import { connect } from 'react-redux'
 import {
   setText,
-  toggleText
+  toggleText,
+  setUserDimenstal,
+  setAiboStore,
+  setAiboNum,
+  setAiboRecord,
+  setAiboTeam,
+  setTogglePage,
+  setNowArea,
+  setMapRecordEasy,
+  setClearedQuest,
+  setQuestProgress,
+  setNowChoosenTeam,
+  setNowChoosenAibo
 } from './actions'
 import './App.less'
 import './css/font-awesome.css'
@@ -1026,33 +1038,201 @@ const Text = (props: {
 const ShowText = connect(
   // 用state来更新UI组件
   (state: any) => ({
-    text: state.text
+    aiboNum: state.userValue.aiboNum
   }),
   // UI组件的行为作为action，通过dispatch来更新state
   (dispatch: any) => ({
-    toggleText: (id: any) => dispatch(toggleText(id))
+    setAiboNum: (aiboNum: any) => dispatch(setAiboNum(aiboNum))
   })
 )((
   // UI组件本体，输入参数由上面两个函数的输出决定
-  text: { id: number, completed: boolean, text: string }[],
-  toggleText: (id: any) => void
-) => (
-  <ul>
-    {text?.map ? text.map((val) => (
-      <Text
-        key={val.id}
-        {...val}
-        onClick={() => toggleText(val.id)}
-      />
-    )) : 'nullval'}
-  </ul>
-))
+  props: any
+) => {
+  console.log(props)
+  console.log(setAiboNum)
+  return (<>
+    <div>
+      {'是：' + props.aiboNum}
+    </div>
+    <button onClick={() => props.setAiboNum(props.aiboNum + 1)}>click</button>
+  </>)
+})
 
-const App4 = () => (
-  <div>
-    <SetText />
-    <ShowText />
-  </div>
-)
+const App4 = connect(
+  // 用state来更新UI组件
+  (state: any) => ({
+    togglePage: state.systemValue.togglePage,
+    nowArea: state.systemValue.nowArea,
+    nowChoosenTeam: state.systemValue.nowChoosenTeam,
+    nowChoosenAibo: state.systemValue.nowChoosenAibo,
+    userDimenstal: state.userValue.userDimenstal,
+    aiboStore: state.userValue.aiboStore,
+    aiboNum: state.userValue.aiboNum,
+    aiboRecord: state.userValue.aiboRecord,
+    aiboTeam: state.userValue.aiboTeam,
+    mapRecordEasy: state.userValue.mapRecordEasy,
+    clearedQuest: state.userValue.clearedQuest,
+    questProgress: state.userValue.questProgress
+  }),
+  // UI组件的行为作为action，通过dispatch来更新state
+  (dispatch: any) => ({
+    setTogglePage: (para: any) => dispatch(setTogglePage(para)),
+    setNowArea: (para: any) => dispatch(setNowArea(para)),
+    setNowChoosenTeam: (para: any) => dispatch(setNowChoosenTeam(para)),
+    setNowChoosenAibo: (para: any) => dispatch(setNowChoosenAibo(para)),
+    setUserDimenstal: (para: any) => dispatch(setUserDimenstal(para)),
+    setAiboStore: (para: any) => dispatch(setAiboStore(para)),
+    setAiboNum: (para: any) => dispatch(setAiboNum(para)),
+    setAiboRecord: (para: any) => dispatch(setAiboRecord(para)),
+    setAiboTeam: (para: any) => dispatch(setAiboTeam(para)),
+    setMapRecordEasy: (para: any) => dispatch(setMapRecordEasy(para)),
+    setClearedQuest: (para: any) => dispatch(setClearedQuest(para)),
+    setQuestProgress: (para: any) => dispatch(setQuestProgress(para))
+  })
+)((props: any) => {
+  // 首先从缓存中读出历史数据，如果没有缓存，则使用初始值
+  /* 不需要存储状态的值 */
+  // 是否显示召唤页面
+  const [showGachaPage, setShowGachaPage] = useState(false)
+  // 是否显示伙伴选择页面
+  const [showAiboChoosePage, setShowAiboChoosePage] = useState(false)
+
+  /* 界面类的变量 */
+  /*
+  // 控制主题的变量
+  // const [isDarkMode, setIsDarkMode] = useState(false)
+  // 切换页面
+  const [togglePage, setTogglePage] = useState(togglePageHistory)
+  // 当前选择的队伍以及队员栏位，用于房间页-伙伴队伍以及伙伴选择页面之间的通信，应该可以用redux
+  const [nowChoosenTeam, setNowChoosenTeam] = useState(nowChoosenTeamHistory)
+  const [nowChoosenAibo, setNowChoosenAibo] = useState(0)
+  // 当前显示的地区
+  const [nowArea, setNowArea] = useState(nowAreaHistory)
+  // 简单难度下地图的完成情况
+  const [mapRecordEasy, setMapRecordEasy] = useState(mapRecordHistory)
+  // 当前玩家正在打第几关，也就是说页面需要渲染到第几关，之后的关卡不再渲染
+  const [clearedQuest, setClearedQuest] = useState(clearedQuestHistory)
+  // 地图的完成进度，用来描绘进度条，为-1则不显示进度条
+  const [questProgress, setQuestProgress] = useState(questProgressHistory)
+ */
+  /* 用户的个人数据 */
+  /*
+  // 用户的次元结晶
+  const [userDimenstal, setUserDimenstal] = useState(userDimenstalHistory)
+  // 用户的伙伴列表
+  const [aiboStore, setAiboStore] = useState(aiboStoreHistory)
+  // 用户召唤的伙伴量，用于给每个伙伴一个不重复的id
+  const [aiboNum, setAiboNum] = useState(aiboNumHistory)
+  // 记录：伙伴收集情况
+  const [aiboRecord, setAiboRecord] = useState(aiboRecordHistory)
+  // 记录：伙伴队伍情况
+  const [aiboTeam, setAiboTeam] = useState(aiboTeamHistory)
+  // console.log([userDimenstal, aiboStore, aiboNum, aiboRecord])
+ */
+  // 定时器，每隔几秒保存数据
+  /* useInterval(() => {
+    localStorage.setItem('userDimenstal', JSON.stringify(props.userDimenstal))
+    localStorage.setItem('aiboStore', JSON.stringify(props.aiboStore))
+    localStorage.setItem('aiboNum', JSON.stringify(props.aiboNum))
+    localStorage.setItem('aiboRecord', JSON.stringify(props.aiboRecord))
+    localStorage.setItem('aiboTeam', JSON.stringify(props.aiboTeam))
+    localStorage.setItem('togglePage', JSON.stringify(props.togglePage))
+    localStorage.setItem('nowArea', JSON.stringify(props.nowArea))
+    localStorage.setItem('mapRecordEasy', JSON.stringify(props.mapRecordEasy))
+    localStorage.setItem('clearedQuest', JSON.stringify(props.clearedQuest))
+    localStorage.setItem('questProgress', JSON.stringify(props.questProgress))
+    localStorage.setItem('nowChoosenTeam', JSON.stringify(props.nowChoosenTeam))
+    localStorage.setItem('initGame', 'alreadyInit')
+  }, 5000) */
+
+  return (
+    <div className='App'>
+      {/* 用于弹出的页面 */}
+      {(showGachaPage || showAiboChoosePage) && <div className='boxPageMask'>
+        {/* 召唤页面 */}
+        {showGachaPage && (<div>
+          <GachaPage
+            userDimenstal={props.userDimenstal}
+            setUserDimenstal={props.setUserDimenstal}
+            setShowGachaPage={setShowGachaPage}
+            aiboStore={props.aiboStore}
+            setAiboStore={props.setAiboStore}
+            aiboNum={props.aiboNum}
+            setAiboNum={props.setAiboNum}
+            aiboRecord={props.aiboRecord}
+            setAiboRecord={props.setAiboRecord}
+          />
+        </div>)}
+        {/* 选择伙伴页面 */}
+        {showAiboChoosePage && (<div>
+          <AiboChoosePage
+            aiboStore={props.aiboStore}
+            setShowAiboChoosePage={setShowAiboChoosePage}
+            nowChoosenAibo={props.nowChoosenAibo}
+            nowChoosenTeam={props.nowChoosenTeam}
+            aiboTeam={props.aiboTeam}
+            setAiboTeam={props.setAiboTeam}
+          />
+        </div>)}
+        {/* 惜别伙伴页面 */}
+        {/* {showAiboDeletePage && (<AiboDeletePage
+        aiboStore={aiboStore}
+        setShowAiboChoosePage={setShowAiboChoosePage}
+        nowChoosenAibo={nowChoosenAibo}
+        aiboTeam={aiboTeam}
+        setAiboTeam={setAiboTeam}
+      />)} */}
+      </div>}
+      {/* 个人信息栏 */}
+      <div className='infoBar'>
+        {'当前拥有的次元结晶：' + props.userDimenstal}
+      </div>
+      {/* 显示的页面主体 */}
+      <div className='pageContain'>
+        {props.togglePage[0] && (<AchievePage
+          aiboRecord={props.aiboRecord}
+        />)}
+        {props.togglePage[1] && (<HomePage
+          aiboStore={props.aiboStore}
+          setAiboStore={props.setAiboStore}
+          aiboNum={props.aiboNum}
+          setAiboNum={props.setAiboNum}
+          aiboTeam={props.aiboTeam}
+          nowChoosenTeam={props.nowChoosenTeam}
+          setShowAiboChoosePage={setShowAiboChoosePage}
+          setNowChoosenAibo={props.setNowChoosenAibo}
+          setNowChoosenTeam={props.setNowChoosenTeam}
+          userDimenstal={props.userDimenstal}
+          setUserDimenstal={props.setUserDimenstal}
+        />)}
+        {props.togglePage[2] && (<MarketPage
+          setShowGachaPage={setShowGachaPage}
+        />)}
+        {props.togglePage[3] && (<MapPage
+          nowArea={props.nowArea}
+          setNowArea={props.setNowArea}
+          mapRecordEasy={props.mapRecordEasy}
+          setMapRecordEasy={props.setMapRecordEasy}
+          clearedQuest={props.clearedQuest}
+          setClearedQuest={props.setClearedQuest}
+          questProgress={props.questProgress}
+          setQuestProgress={props.setQuestProgress}
+          userDimenstal={props.userDimenstal}
+          setUserDimenstal={props.setUserDimenstal}
+          aiboStore={props.aiboStore}
+          aiboTeam={props.aiboTeam}
+          nowChoosenTeam={props.nowChoosenTeam}
+          setShowAiboChoosePage={setShowAiboChoosePage}
+          setNowChoosenAibo={props.setNowChoosenAibo}
+          setNowChoosenTeam={props.setNowChoosenTeam}
+        />)}
+      </div>
+      {/* 导航栏 */}
+      <div className='infoBar'>
+        <Navigation setTogglePage={props.setTogglePage} />
+      </div>
+    </div>
+  )
+})
 
 export default App4

@@ -70,6 +70,8 @@ module.exports = {
     'brace-style': [2, '1tbs', {
       allowSingleLine: true
     }],
+    // 控制末尾的逗号
+    // 'comma-dangle': 0,
     // 控制逗号前后的空格
     'comma-spacing': [2, {
       before: false,

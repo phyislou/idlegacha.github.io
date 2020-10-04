@@ -14,7 +14,11 @@ console.log(store.getState())
 
 // 每次 state 更新时，打印日志
 // 注意 subscribe() 返回一个函数用来注销监听器
-const unsubscribe = store.subscribe(() => console.log(store.getState()))
+const unsubscribe = store.subscribe(() => {
+  localStorage.setItem('systemValue', JSON.stringify(store.getState().systemValue))
+  localStorage.setItem('userValue', JSON.stringify(store.getState().userValue))
+  console.log(store.getState())
+})
 
 ReactDOM.render(
   <React.StrictMode>

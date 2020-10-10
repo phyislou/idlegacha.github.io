@@ -327,8 +327,8 @@ function mapStructureInit (padding) {
 }
 // 地图完成情况的初始记录，格式应该与上面的地图信息相同
 const mapRecordInitEasy = mapStructureInit(false)
-// 每个quest探索进度的初始记录，格式应该与上面的地图信息相同
-const questProgressInit = mapStructureInit(-1)
+// 表示每个quest是否正在探索，格式应该与上面的地图信息相同
+const questIsExploringInit = mapStructureInit(false)
 // qes:仅仅用来保存结构，应该用更好的方法。
 
-export { aiboInfo, mapInfo, mapRecordInitEasy, questProgressInit }
+export { aiboInfo, mapInfo, mapRecordInitEasy, questIsExploringInit }

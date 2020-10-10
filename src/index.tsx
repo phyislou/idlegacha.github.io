@@ -16,6 +16,7 @@ console.log(store.getState())
 // 注意 subscribe() 返回一个函数用来注销监听器
 const unsubscribe = store.subscribe(() => {
   localStorage.setItem('systemValue', JSON.stringify(store.getState().systemValue))
+  localStorage.setItem('tempValue', JSON.stringify(store.getState().tempValue))
   localStorage.setItem('userValue', JSON.stringify(store.getState().userValue))
   console.log(store.getState())
 })

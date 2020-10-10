@@ -1,24 +1,28 @@
 import React, { useState, useEffect, useRef, Suspense } from 'react'
 import { connect } from 'react-redux'
 import {
-  setText,
-  toggleText,
-  setUserDimenstal,
-  setAiboStore,
-  setAiboNum,
-  setAiboRecord,
-  setAiboTeam,
-  setTogglePage,
-  setNowArea,
-  setMapRecordEasy,
-  setClearedQuest,
-  setQuestProgress,
-  setNowChoosenTeam,
-  setNowChoosenAibo
+  // 系统数据
+  setNowArea, // 当前显示的地区
+  setNowChoosenAibo, // 当前选择的队员栏位，用于房间页-伙伴队伍以及伙伴选择页面之间的通信
+  setNowChoosenTeam, // 当前选择的队伍栏位，用于房间页-伙伴队伍以及伙伴选择页面之间的通信
+  setQuestIsExploring, // 每个关卡当前是否正在探索当中
+  setQuestProgress, // 正在进行探索的关卡
+  setTogglePage, // 切换页面
+  // 临时数据
+  setShowAiboChoosePage, // 是否显示伙伴选择页面
+  setShowGachaPage, // 是否显示召唤页面
+  // 用户数据
+  setAiboNum, // 用户召唤的伙伴量，用于给每个伙伴一个不重复的id
+  setAiboRecord, // 记录：伙伴收集情况
+  setAiboStore, // 用户的伙伴列表
+  setAiboTeam, // 记录：伙伴队伍情况
+  setClearedQuest, // 当前玩家正在打第几关，也就是说页面需要渲染到第几关，之后的关卡不再渲染
+  setMapRecordEasy, // 简单难度下地图的完成情况
+  setUserDimenstal // 用户的次元结晶
 } from './actions'
 import './App.less'
 import './css/font-awesome.css'
-import { aiboInfo, mapInfo, mapRecordInitEasy, questProgressInit } from './staticData'
+import { aiboInfo, mapInfo } from './staticData'
 import {
   Avatar,
   Button,
@@ -49,6 +53,27 @@ import {
 import Img from './1.jpg'
 import { prependOnceListener } from 'process'
 
+// 延时，定时器
+function useInterval (callback: any, delay: any) {
+  const savedCallback = useRef()
+
+  // 保存新回调
+  useEffect(() => {
+    savedCallback.current = callback
+  })
+
+  // 建立 interval
+  useEffect(() => {
+    function tick () {
+      savedCallback.current()
+    }
+    if (delay !== null) {
+      let id = setInterval(tick, delay)
+      return () => clearInterval(id)
+    }
+  }, [delay])
+}
+
 // 伙伴数据
 interface aiboType {
   id: number,
@@ -78,6 +103,12 @@ interface questType {
   id: number,
   HP: number,
   gold: number
+}
+
+interface exploringQuestType {
+  questId: number,
+  teamId: number,
+  nowProgress: number
 }
 
 // 用来给给定字段排序
@@ -122,23 +153,6 @@ const getData = (dataAddr: string, assignFunc: (result: any) => void) => {
       // console.log(result)
     })
     .catch((err) => {console.log(err)})
-}
-
-// 延时，定时器
-const useInterval = (callback: (...para: any) => void, delay: number) => {
-  const latestCallback = useRef()
-  // 保存新回调
-  useEffect(() => {
-    latestCallback.current = callback
-  })
-  // 建立 interval
-  useEffect(() => {
-    if (delay !== null) {
-      const interval = setInterval(() => latestCallback.current(), delay || 0)
-      return () => clearInterval(interval)
-    }
-    return undefined
-  }, [delay])
 }
 
 // 处理一次召唤，设置概率
@@ -386,7 +400,31 @@ interface HomePageProps extends AiboTeamPageProps {
   setUserDimenstal: (para: number) => void
 }
 
-const HomePage = (props: HomePageProps) => {
+const HomePage = connect(
+  // 用state来更新UI组件
+  (state: any) => ({
+    // 系统数据
+    nowChoosenTeam: state.systemValue.nowChoosenTeam,
+    // 用户数据
+    aiboNum: state.userValue.aiboNum,
+    aiboStore: state.userValue.aiboStore,
+    aiboTeam: state.userValue.aiboTeam,
+    userDimenstal: state.userValue.userDimenstal
+  }),
+  // UI组件的行为作为action，通过dispatch来更新state
+  (dispatch: any) => ({
+    // 系统数据
+    setNowChoosenAibo: (para: number) => dispatch(setNowChoosenAibo(para)),
+    setNowChoosenTeam: (para: number) => dispatch(setNowChoosenTeam(para)),
+    // 临时数据
+    setShowAiboChoosePage: (para: boolean) => dispatch(setShowAiboChoosePage(para)),
+    // 用户数据
+    setAiboNum: (para: number) => dispatch(setAiboNum(para)),
+    setAiboStore: (para: userAiboType[]) => dispatch(setAiboStore(para)),
+    setClearedQuest: (para: number) => dispatch(setClearedQuest(para)),
+    setUserDimenstal: (para: number) => dispatch(setUserDimenstal(para))
+  })
+)((props: HomePageProps) => {
   // 当前选择的伙伴，用于伙伴详细信息模块
   const [chosenAiboInfo, setChosenAiboInfo] = useState(null)
   // 新建一个map，用来存放每个伙伴是否被选中的状态
@@ -517,7 +555,7 @@ const HomePage = (props: HomePageProps) => {
       </div>
     </div>
   )
-}
+})
 
 // 排序按钮
 interface SortButtonProps {
@@ -578,7 +616,20 @@ interface AiboTeamPageProps {
   setNowChoosenTeam: (para: number) => void
 }
 
-const AiboTeamPage = (props: AiboTeamPageProps) => (
+const AiboTeamPage = connect(
+  // 用state来更新UI组件
+  (state: any) => ({
+    aiboStore: state.userValue.aiboStore,
+    aiboTeam: state.userValue.aiboTeam,
+    nowChoosenTeam: state.systemValue.nowChoosenTeam
+  }),
+  // UI组件的行为作为action，通过dispatch来更新state
+  (dispatch: any) => ({
+    setShowAiboChoosePage: (para: boolean) => dispatch(setShowAiboChoosePage(para)),
+    setNowChoosenAibo: (para: number) => dispatch(setNowChoosenAibo(para)),
+    setNowChoosenTeam: (para: number) => dispatch(setNowChoosenTeam(para))
+  })
+)((props: AiboTeamPageProps) => (
   <div className='flexCol width100 height100 containBorder'>
     <div className='flex-1 flexCenter borderBottom'>{'队伍列表'}</div>
     <div className='flex-7 flexStart wrapScroll'>
@@ -597,25 +648,47 @@ const AiboTeamPage = (props: AiboTeamPageProps) => (
       </div>)}
     </div>
   </div>
-)
+))
 
 // 建立城镇页面
-interface MarketPageProps {
-  setShowGachaPage: (para: boolean) => void,
-}
-
-const MarketPage = (props: MarketPageProps) => (
+const MarketPage = connect(
+  // 用state来更新UI组件
+  (state: any) => ({
+    // 系统数据
+    showGachaPage: state.tempValue.showGachaPage
+  }),
+  // UI组件的行为作为action，通过dispatch来更新state
+  (dispatch: any) => ({
+    // 系统数据
+    setShowGachaPage: (para: boolean) => dispatch(setShowGachaPage(para))
+  })
+)((props: any) => (
   <div className='pageArea'>
-    <Button variant='outlined' className='marginAuto' onClick={() => {props.setShowGachaPage(true)}}>召唤</Button>
+    <Button variant='outlined' className='marginAuto' onClick={() => props.setShowGachaPage(true)}>召唤</Button>
   </div>
-)
+))
 
 // 建立地图页面
 interface MapPageProps extends QuestComponentProps, AiboTeamPageProps {
   setNowArea: (para: number) => void
 }
 
-const MapPage = (props: MapPageProps) => (
+const MapPage = connect(
+  // 用state来更新UI组件
+  (state: any) => ({
+    // 系统数据
+    nowArea: state.systemValue.nowArea,
+    // 用户数据
+    clearedQuest: state.userValue.clearedQuest
+  }),
+  // UI组件的行为作为action，通过dispatch来更新state
+  (dispatch: any) => ({
+    // 系统数据
+    setNowArea: (para: any) => dispatch(setNowArea(para)),
+    // 用户数据
+    setClearedQuest: (para: any) => dispatch(setClearedQuest(para))
+  })
+)((props: any) => (
   <div className='pageArea flexRow'>
     {/* 地区列表模块 */}
     <div className='flex-1 flexCol height100 containBorder'>
@@ -636,32 +709,16 @@ const MapPage = (props: MapPageProps) => (
           val.id/* 这个值即为当前关卡的id */ > props.clearedQuest/* 判断其是否大于用户已完成的进度 */ ? null : <QuestComponent
             key={val.index}
             questInfo={val}
-            nowArea={props.nowArea}
-            mapRecordEasy={props.mapRecordEasy}
-            setMapRecordEasy={props.setMapRecordEasy}
-            clearedQuest={props.clearedQuest}
-            setClearedQuest={props.setClearedQuest}
-            questProgress={props.questProgress}
-            setQuestProgress={props.setQuestProgress}
-            userDimenstal={props.userDimenstal}
-            setUserDimenstal={props.setUserDimenstal}
           />
         ))}
       </div>
       {/* 伙伴队伍模块 */}
       <div className='flex-1 width100 wrapScroll'>
-        <AiboTeamPage
-          aiboStore={props.aiboStore}
-          aiboTeam={props.aiboTeam}
-          nowChoosenTeam={props.nowChoosenTeam}
-          setShowAiboChoosePage={props.setShowAiboChoosePage}
-          setNowChoosenAibo={props.setNowChoosenAibo}
-          setNowChoosenTeam={props.setNowChoosenTeam}
-        />
+        <AiboTeamPage />
       </div>
     </div>
   </div>
-)
+))
 
 // 建立每个quest的组件
 interface QuestComponentProps {
@@ -670,51 +727,87 @@ interface QuestComponentProps {
   setMapRecordEasy: (para: boolean[][][]) => void,
   clearedQuest: number,
   setClearedQuest: (para: number) => void,
-  questProgress: number[][][],
-  setQuestProgress: (para: number[][][]) => void,
+  questIsExploring: boolean[][][],
+  setQuestIsExploring: (para: boolean[][][]) => void,
+  questProgress: exploringQuestType[],
+  setQuestProgress: (para: exploringQuestType[]) => void,
   userDimenstal: number,
   setUserDimenstal: (para: number) => void
 }
 
-const QuestComponent = (props: QuestComponentProps & { questInfo: questType }) => {// 类型，在MapPage流传下来的类型上再加上MapPage自己给过来的类型questType
-  const [nowProgress, setNowProgress] = useState(props.questProgress[0][props.nowArea][props.questInfo.index])
+const QuestComponent = connect(
+  // 用state来更新UI组件
+  (state: any) => ({
+    nowArea: state.systemValue.nowArea,
+    mapRecordEasy: state.userValue.mapRecordEasy,
+    clearedQuest: state.userValue.clearedQuest,
+    questIsExploring: state.systemValue.questIsExploring,
+    questProgress: state.userValue.questProgress,
+    userDimenstal: state.userValue.userDimenstal
+  }),
+  // UI组件的行为作为action，通过dispatch来更新state
+  (dispatch: any) => ({
+    setMapRecordEasy: (para: boolean[][][]) => dispatch(setMapRecordEasy(para)),
+    setClearedQuest: (para: number) => dispatch(setClearedQuest(para)),
+    setQuestIsExploring: (para: boolean[][][]) => dispatch(setQuestIsExploring(para)),
+    setQuestProgress: (para: exploringQuestType[]) => dispatch(setQuestProgress(para)),
+    setUserDimenstal: (para: number) => dispatch(setUserDimenstal(para))
+  })
+)((props: QuestComponentProps & { questInfo: questType }) => {// 类型，在MapPage流传下来的类型上再加上MapPage自己给过来的类型questType
+  const [isExploring, setIsExploring] = useState(props.questIsExploring[0][props.nowArea][props.questInfo.index])
+  const [isCompleted, setIsCompleted] = useState(props.mapRecordEasy[0][props.nowArea][props.questInfo.index])
+  const [exploringProgress, setExploringProgress] = useState(0)
 
-  const setNowRecordEasy = (indexArea: number, indexQuest: number) => {
-    if (!props.mapRecordEasy[0][indexArea][indexQuest]) {
-      let mapRecordEasyTemp = props.mapRecordEasy
-      mapRecordEasyTemp[0][indexArea][indexQuest] = true
-      props.setMapRecordEasy(mapRecordEasyTemp)
+  useInterval(
+    () => {
+      if (exploringProgress >= 100) {
+        console.log('完成')
+
+        // 重新将探索进度置0
+        setExploringProgress(0)
+
+        // 重新将正在探索的标志位置false
+        setIsExploring(false)
+        let questIsExploringTemp = props.questIsExploring
+        questIsExploringTemp[0][props.nowArea][props.questInfo.index] = false
+        setQuestIsExploring(questIsExploringTemp)
+
+        // 将地图完成记录置为完成状态
+        if (!isCompleted) {
+          setIsCompleted(true)
+          let mapRecordTemp = props.mapRecordEasy
+          mapRecordTemp[0][props.nowArea][props.questInfo.index] = true
+          setMapRecordEasy(mapRecordTemp)
+        }
+
+        // 最后设置次元结晶、经验、清关标志位等
+        props.setUserDimenstal(props.userDimenstal + props.questInfo.gold)
+        props.clearedQuest === props.questInfo.id && props.setClearedQuest(props.clearedQuest + 1)
+
+      } else {
+        let willProgress = exploringProgress + Math.random() * 10
+        setExploringProgress(willProgress > 100 ? 100 : willProgress)
+      }
+    },
+    isExploring ? 80 : null
+  )
+
+  function exploringStart () {
+    // 点击关卡，判断当前关卡是否已经处在闯关过程中
+    if (!isExploring) {
+      // 如果未在闯关过程中，则显示一个闯关过程，进度条完成后返回成功失败的结果
+      setIsExploring(true)
+      let questIsExploringTemp = props.questIsExploring
+      questIsExploringTemp[0][props.nowArea][props.questInfo.index] = true
+      setQuestIsExploring(questIsExploringTemp)
     }
   }
 
   return (
-    <div className='areaDiv' onClick={() => {
-    // 点击关卡，判断当前关卡是否已经处在闯关过程中
-      if (nowProgress < 0) {
-      // 如果未在闯关过程中，则显示一个闯关过程，进度条完成后返回成功失败的结果
-        setNowProgress(0)
-        const timer = setInterval(() => {
-          setNowProgress(nowProgress >= 100 ? (() => {
-            setNowProgress(-1)
-            console.log('进度条完成')
-            clearInterval(timer)
-            return 100
-          })() : (() => {
-            console.log(nowProgress)
-            let willProgress = nowProgress + Math.random() * 10
-            return willProgress > 100 ? 100 : willProgress
-          })())
-        }, 300)
-      }
-      // 先默认成功，成功后设置次元结晶、经验、清关标志位等
-      props.setUserDimenstal(props.userDimenstal + props.questInfo.gold)
-      props.clearedQuest === props.questInfo.id && props.setClearedQuest(props.clearedQuest + 1)
-    }}>
-      {props.questInfo.name}
-      {
-        props.mapRecordEasy[0][props.nowArea][props.questInfo.index] && <Avatar>完成</Avatar>// 显示完成图标
-      }
-      {(nowProgress > -1) && <div>{`----当前进度${Math.round(nowProgress * 100) / 100}%`}</div>
+    <div className='areaDiv' onClick={() => exploringStart()}>
+      {isCompleted && <Avatar>完成</Avatar>// 显示完成图标
+      }{props.questInfo.name}
+      {isExploring && <div>{`----当前进度${Math.round(exploringProgress * 100) / 100}%`}</div>
       /* <ProgressLabel
         nowProgress={0}
         setNowProgress={(nowProgress: number) => setNowProgress(props.questInfo.index, nowProgress)}
@@ -722,8 +815,9 @@ const QuestComponent = (props: QuestComponentProps & { questInfo: questType }) =
       /> */}
     </div>
   )
-}
+})
 
+/*
 // 进度条组件
 const LinearProgressWithLabel = (props: LinearProgressProps & { value: number }) => (
   <Box display="flex" alignItems="center">
@@ -770,391 +864,82 @@ const ProgressLabel = (props: ProgressLabelProps) => {
     </div>
   )
 }
+*/
 
 // 建立底部导航栏
-interface NavigationProps {
-  setTogglePage: (para: boolean[]) => void
-}
-
-const Navigation = (props: NavigationProps) => {
-  const [value, setValue] = useState('recents')
-
-  const handleChange = (event: any, newValue: any) => {
-    switch (newValue) {
-    case 'achi':
-      props.setTogglePage([true, false, false, false])
-      break
-    case 'room':
-      props.setTogglePage([false, true, false, false])
-      break
-    case 'town':
-      props.setTogglePage([false, false, true, false])
-      break
-    case 'maps':
-      props.setTogglePage([false, false, false, true])
-    }
-    setValue(newValue)
-  }
-
-  return (
-    <BottomNavigation value={value} showLabels onChange={handleChange} style={{ width: '100%' }}>
-      <BottomNavigationAction label='成就' value='achi' icon={<CollectionsBookmarkIcon />} />
-      <BottomNavigationAction label='房间' value='room' icon={<HomeIcon />} />
-      <BottomNavigationAction label='城镇' value='town' icon={<LocationCityIcon />} />
-      <BottomNavigationAction label='地图' value='maps' icon={<MapIcon />} />
-    </BottomNavigation>
-  )
-}
-
-const App = () => {
-  // 首先从缓存中读出历史数据，如果没有缓存，则使用初始值
-  /* 不再添加变量后再用这个
-  const [
-    userDimenstalHistory, aiboStoreHistory,
-    aiboNumHistory, aiboRecordHistory
-  ] = localStorage.getItem('initGame') === null ? [
-    54321, [], 0, [...Array(aiboInfo.length)].map(() => false)
-  ] : [
-    JSON.parse(localStorage.getItem('userDimenstal') as string),
-    JSON.parse(localStorage.getItem('aiboStore') as string),
-    JSON.parse(localStorage.getItem('aiboNum') as string),
-    JSON.parse(localStorage.getItem('aiboRecord') as string)
-  ] */
-  const userDimenstalHistory = localStorage.getItem('userDimenstal') === null ? 0 : JSON.parse(localStorage.getItem('userDimenstal') as string)
-  const aiboStoreHistory = localStorage.getItem('aiboStore') === null ? [] : JSON.parse(localStorage.getItem('aiboStore') as string)
-  const aiboNumHistory = localStorage.getItem('aiboNum') === null ? 0 : JSON.parse(localStorage.getItem('aiboNum') as string)
-  const aiboRecordHistory = localStorage.getItem('aiboRecord') === null ? [...Array(aiboInfo.length)].map(() => false) : JSON.parse(localStorage.getItem('aiboRecord') as string)
-  const aiboTeamHistory = localStorage.getItem('aiboTeam') === null ? [...Array(4)].map(() => [...Array(4)].map(() => 0)) : JSON.parse(localStorage.getItem('aiboTeam') as string)
-  const togglePageHistory = localStorage.getItem('togglePage') === null ? [false, true, false, false] : JSON.parse(localStorage.getItem('togglePage') as string)
-  const nowAreaHistory = localStorage.getItem('nowArea') === null ? 0 : JSON.parse(localStorage.getItem('nowArea') as string)
-  const mapRecordHistory = localStorage.getItem('mapRecordEasy') === null ? mapRecordInitEasy : JSON.parse(localStorage.getItem('mapRecordEasy') as string)
-  const clearedQuestHistory = localStorage.getItem('clearedQuest') === null ? 1 : JSON.parse(localStorage.getItem('clearedQuest') as string)
-  const questProgressHistory = localStorage.getItem('questProgress') === null ? questProgressInit : JSON.parse(localStorage.getItem('questProgress') as string)
-  const nowChoosenTeamHistory = localStorage.getItem('nowChoosenTeam') === null ? 0 : JSON.parse(localStorage.getItem('nowChoosenTeam') as string)
-  // const areaStateHistory = localStorage.getItem('areaState') === null ? [...Array(mapInfo.length)].map(() => false) : JSON.parse(localStorage.getItem('areaState') as string)
-  // const questStateHistory = localStorage.getItem('questState') === null ? [...Array(4)].map(() => 0) : JSON.parse(localStorage.getItem('questState') as string)
-
-  /* 然后写到变量中 */
-  /* 界面类的变量 */
-  // 控制主题的变量
-  // const [isDarkMode, setIsDarkMode] = useState(false)
-  // 是否显示召唤页面
-  const [showGachaPage, setShowGachaPage] = useState(false)
-  // 是否显示伙伴选择页面
-  const [showAiboChoosePage, setShowAiboChoosePage] = useState(false)
-  // 是否显示惜别伙伴页面
-  // const [showAiboDeletePage, setShowAiboDeletePage] = useState(false)
-  // 切换页面
-  const [togglePage, setTogglePage] = useState(togglePageHistory)
-  // 当前选择的队伍以及队员栏位，用于房间页-伙伴队伍以及伙伴选择页面之间的通信，应该可以用redux
-  const [nowChoosenTeam, setNowChoosenTeam] = useState(nowChoosenTeamHistory)
-  const [nowChoosenAibo, setNowChoosenAibo] = useState(0)
-  // 当前显示的地区
-  const [nowArea, setNowArea] = useState(nowAreaHistory)
-  // 简单难度下地图的完成情况
-  const [mapRecordEasy, setMapRecordEasy] = useState(mapRecordHistory)
-  // 当前玩家正在打第几关，也就是说页面需要渲染到第几关，之后的关卡不再渲染
-  const [clearedQuest, setClearedQuest] = useState(clearedQuestHistory)
-  // 地图的完成进度，用来描绘进度条，为-1则不显示进度条
-  const [questProgress, setQuestProgress] = useState(questProgressHistory)
-
-  /* 用户的个人数据 */
-  // 用户的次元结晶
-  const [userDimenstal, setUserDimenstal] = useState(userDimenstalHistory)
-  // 用户的伙伴列表
-  const [aiboStore, setAiboStore] = useState(aiboStoreHistory)
-  // 用户召唤的伙伴量，用于给每个伙伴一个不重复的id
-  const [aiboNum, setAiboNum] = useState(aiboNumHistory)
-  // 记录：伙伴收集情况
-  const [aiboRecord, setAiboRecord] = useState(aiboRecordHistory)
-  // 记录：伙伴队伍情况
-  const [aiboTeam, setAiboTeam] = useState(aiboTeamHistory)
-  // console.log([userDimenstal, aiboStore, aiboNum, aiboRecord])
-
-  // 定时器，每隔几秒保存数据
-  useInterval(() => {
-    localStorage.setItem('userDimenstal', JSON.stringify(userDimenstal))
-    localStorage.setItem('aiboStore', JSON.stringify(aiboStore))
-    localStorage.setItem('aiboNum', JSON.stringify(aiboNum))
-    localStorage.setItem('aiboRecord', JSON.stringify(aiboRecord))
-    localStorage.setItem('aiboTeam', JSON.stringify(aiboTeam))
-    localStorage.setItem('togglePage', JSON.stringify(togglePage))
-    localStorage.setItem('nowArea', JSON.stringify(nowArea))
-    localStorage.setItem('mapRecordEasy', JSON.stringify(mapRecordEasy))
-    localStorage.setItem('clearedQuest', JSON.stringify(clearedQuest))
-    localStorage.setItem('questProgress', JSON.stringify(questProgress))
-    localStorage.setItem('nowChoosenTeam', JSON.stringify(nowChoosenTeam))
-    localStorage.setItem('initGame', 'alreadyInit')
-  }, 5000)
-
-  return (
-    <div className='App'>
-      {/* 用于弹出的页面 */}
-      {(showGachaPage || showAiboChoosePage) && <div className='boxPageMask'>
-        {/* 召唤页面 */}
-        {showGachaPage && (<div>
-          <GachaPage
-            userDimenstal={userDimenstal}
-            setUserDimenstal={setUserDimenstal}
-            setShowGachaPage={setShowGachaPage}
-            aiboStore={aiboStore}
-            setAiboStore={setAiboStore}
-            aiboNum={aiboNum}
-            setAiboNum={setAiboNum}
-            aiboRecord={aiboRecord}
-            setAiboRecord={setAiboRecord}
-          />
-        </div>)}
-        {/* 选择伙伴页面 */}
-        {showAiboChoosePage && (<div>
-          <AiboChoosePage
-            aiboStore={aiboStore}
-            setShowAiboChoosePage={setShowAiboChoosePage}
-            nowChoosenAibo={nowChoosenAibo}
-            nowChoosenTeam={nowChoosenTeam}
-            aiboTeam={aiboTeam}
-            setAiboTeam={setAiboTeam}
-          />
-        </div>)}
-        {/* 惜别伙伴页面 */}
-        {/* {showAiboDeletePage && (<AiboDeletePage
-          aiboStore={aiboStore}
-          setShowAiboChoosePage={setShowAiboChoosePage}
-          nowChoosenAibo={nowChoosenAibo}
-          aiboTeam={aiboTeam}
-          setAiboTeam={setAiboTeam}
-        />)} */}
-      </div>}
-      {/* 个人信息栏 */}
-      <div className='infoBar'>
-        {'当前拥有的次元结晶：' + userDimenstal}
-      </div>
-      {/* 显示的页面主体 */}
-      <div className='pageContain'>
-        {togglePage[0] && (<AchievePage
-          aiboRecord={aiboRecord}
-        />)}
-        {togglePage[1] && (<HomePage
-          aiboStore={aiboStore}
-          setAiboStore={setAiboStore}
-          aiboNum={aiboNum}
-          setAiboNum={setAiboNum}
-          aiboTeam={aiboTeam}
-          nowChoosenTeam={nowChoosenTeam}
-          setShowAiboChoosePage={setShowAiboChoosePage}
-          setNowChoosenAibo={setNowChoosenAibo}
-          setNowChoosenTeam={setNowChoosenTeam}
-          userDimenstal={userDimenstal}
-          setUserDimenstal={setUserDimenstal}
-        />)}
-        {togglePage[2] && (<MarketPage
-          setShowGachaPage={setShowGachaPage}
-        />)}
-        {togglePage[3] && (<MapPage
-          nowArea={nowArea}
-          setNowArea={setNowArea}
-          mapRecordEasy={mapRecordEasy}
-          setMapRecordEasy={setMapRecordEasy}
-          clearedQuest={clearedQuest}
-          setClearedQuest={setClearedQuest}
-          questProgress={questProgress}
-          setQuestProgress={setQuestProgress}
-          userDimenstal={userDimenstal}
-          setUserDimenstal={setUserDimenstal}
-          aiboStore={aiboStore}
-          aiboTeam={aiboTeam}
-          nowChoosenTeam={nowChoosenTeam}
-          setShowAiboChoosePage={setShowAiboChoosePage}
-          setNowChoosenAibo={setNowChoosenAibo}
-          setNowChoosenTeam={setNowChoosenTeam}
-        />)}
-      </div>
-      {/* 导航栏 */}
-      <div className='infoBar'>
-        <Navigation setTogglePage={setTogglePage} />
-      </div>
-    </div>
-  )
-}
-
-const App3 = () => {
-  const [isInterval, setIsInterval] = useState(false)// 是否在计数状态
-  const [nowProgress, setNowProgress] = useState(0)// 当前计数的值
-  const ref = useRef()
-
-  return (<>
-    <Button onClick={() => {
-      if (!isInterval) {
-        ref.current = setInterval(() => {
-          console.log(`值为：${nowProgress}`)
-          setNowProgress(nowProgress + 10)
-        }, 500)
-        setIsInterval(true)
-      } else {
-        clearInterval(ref.current)
-        setIsInterval(false)
-      }
-    }}>{isInterval ? '停止计时' : '开始计时'}</Button>
-    <div>{`当前值为：${nowProgress}`}</div>
-  </>)
-}
-
-const SetText = connect()(({ dispatch }: any) => {
-  let input: any
-
-  return (
-    <div>
-      <form onSubmit={(e) => {
-        e.preventDefault()
-        if (!input.value.trim()) {
-          return
-        }
-        dispatch(setText(input.value))
-        input.value = ''
-      }}>
-        <input ref={
-          // eslint-disable-next-line no-return-assign
-          (node) => input = node
-        } />
-        <button type="submit">
-          Set Text
-        </button>
-      </form>
-    </div>
-  )
-})
-
-const Text = (props: {
-  onClick: () => void,
-  text: string
-}) => (
-  <li
-    onClick={props.onClick}
-  >
-    {props.text}
-  </li>
-)
-
-const ShowText = connect(
+const Navigation = connect(
   // 用state来更新UI组件
   (state: any) => ({
-    aiboNum: state.userValue.aiboNum
+    togglePage: state.systemValue.togglePage
   }),
   // UI组件的行为作为action，通过dispatch来更新state
   (dispatch: any) => ({
-    setAiboNum: (aiboNum: any) => dispatch(setAiboNum(aiboNum))
+    setTogglePage: (para: any) => dispatch(setTogglePage(para))
   })
-)((
-  // UI组件本体，输入参数由上面两个函数的输出决定
-  props: any
-) => {
-  console.log(props)
-  console.log(setAiboNum)
-  return (<>
-    <div>
-      {'是：' + props.aiboNum}
-    </div>
-    <button onClick={() => props.setAiboNum(props.aiboNum + 1)}>click</button>
-  </>)
-})
+)((props: any) => (
+  <BottomNavigation value={props.togglePage} showLabels onChange={
+    (event: object, value: any) => props.setTogglePage(value)
+  } style={{ width: '100%' }}>
+    <BottomNavigationAction label='成就' value={0} icon={<CollectionsBookmarkIcon />} />
+    <BottomNavigationAction label='房间' value={1} icon={<HomeIcon />} />
+    <BottomNavigationAction label='城镇' value={2} icon={<LocationCityIcon />} />
+    <BottomNavigationAction label='地图' value={3} icon={<MapIcon />} />
+  </BottomNavigation>
+))
 
-const App4 = connect(
+const App = connect(
   // 用state来更新UI组件
   (state: any) => ({
-    togglePage: state.systemValue.togglePage,
+    // 系统数据
     nowArea: state.systemValue.nowArea,
-    nowChoosenTeam: state.systemValue.nowChoosenTeam,
     nowChoosenAibo: state.systemValue.nowChoosenAibo,
-    userDimenstal: state.userValue.userDimenstal,
-    aiboStore: state.userValue.aiboStore,
+    nowChoosenTeam: state.systemValue.nowChoosenTeam,
+    togglePage: state.systemValue.togglePage,
+    // 临时数据
+    showAiboChoosePage: state.tempValue.showAiboChoosePage,
+    showGachaPage: state.tempValue.showGachaPage,
+    // 用户数据
     aiboNum: state.userValue.aiboNum,
     aiboRecord: state.userValue.aiboRecord,
+    aiboStore: state.userValue.aiboStore,
     aiboTeam: state.userValue.aiboTeam,
-    mapRecordEasy: state.userValue.mapRecordEasy,
     clearedQuest: state.userValue.clearedQuest,
-    questProgress: state.userValue.questProgress
+    mapRecordEasy: state.userValue.mapRecordEasy,
+    questProgress: state.userValue.questProgress,
+    userDimenstal: state.userValue.userDimenstal
   }),
   // UI组件的行为作为action，通过dispatch来更新state
   (dispatch: any) => ({
-    setTogglePage: (para: any) => dispatch(setTogglePage(para)),
-    setNowArea: (para: any) => dispatch(setNowArea(para)),
-    setNowChoosenTeam: (para: any) => dispatch(setNowChoosenTeam(para)),
-    setNowChoosenAibo: (para: any) => dispatch(setNowChoosenAibo(para)),
-    setUserDimenstal: (para: any) => dispatch(setUserDimenstal(para)),
-    setAiboStore: (para: any) => dispatch(setAiboStore(para)),
-    setAiboNum: (para: any) => dispatch(setAiboNum(para)),
-    setAiboRecord: (para: any) => dispatch(setAiboRecord(para)),
-    setAiboTeam: (para: any) => dispatch(setAiboTeam(para)),
-    setMapRecordEasy: (para: any) => dispatch(setMapRecordEasy(para)),
-    setClearedQuest: (para: any) => dispatch(setClearedQuest(para)),
-    setQuestProgress: (para: any) => dispatch(setQuestProgress(para))
+    // 系统数据
+    setNowArea: (para: number) => dispatch(setNowArea(para)),
+    setNowChoosenAibo: (para: number) => dispatch(setNowChoosenAibo(para)),
+    setNowChoosenTeam: (para: number) => dispatch(setNowChoosenTeam(para)),
+    setTogglePage: (para: number) => dispatch(setTogglePage(para)),
+    // 临时数据
+    setShowAiboChoosePage: (para: boolean) => dispatch(setShowAiboChoosePage(para)),
+    setShowGachaPage: (para: boolean) => dispatch(setShowGachaPage(para)),
+    // 用户数据
+    setAiboNum: (para: number) => dispatch(setAiboNum(para)),
+    setAiboRecord: (para: boolean[]) => dispatch(setAiboRecord(para)),
+    setAiboStore: (para: userAiboType[]) => dispatch(setAiboStore(para)),
+    setAiboTeam: (para: number[][]) => dispatch(setAiboTeam(para)),
+    setClearedQuest: (para: number) => dispatch(setClearedQuest(para)),
+    setMapRecordEasy: (para: boolean[][][]) => dispatch(setMapRecordEasy(para)),
+    setQuestProgress: (para: number[][][]) => dispatch(setQuestProgress(para)),
+    setUserDimenstal: (para: number) => dispatch(setUserDimenstal(para))
   })
-)((props: any) => {
-  // 首先从缓存中读出历史数据，如果没有缓存，则使用初始值
-  /* 不需要存储状态的值 */
-  // 是否显示召唤页面
-  const [showGachaPage, setShowGachaPage] = useState(false)
-  // 是否显示伙伴选择页面
-  const [showAiboChoosePage, setShowAiboChoosePage] = useState(false)
-
-  /* 界面类的变量 */
-  /*
-  // 控制主题的变量
-  // const [isDarkMode, setIsDarkMode] = useState(false)
-  // 切换页面
-  const [togglePage, setTogglePage] = useState(togglePageHistory)
-  // 当前选择的队伍以及队员栏位，用于房间页-伙伴队伍以及伙伴选择页面之间的通信，应该可以用redux
-  const [nowChoosenTeam, setNowChoosenTeam] = useState(nowChoosenTeamHistory)
-  const [nowChoosenAibo, setNowChoosenAibo] = useState(0)
-  // 当前显示的地区
-  const [nowArea, setNowArea] = useState(nowAreaHistory)
-  // 简单难度下地图的完成情况
-  const [mapRecordEasy, setMapRecordEasy] = useState(mapRecordHistory)
-  // 当前玩家正在打第几关，也就是说页面需要渲染到第几关，之后的关卡不再渲染
-  const [clearedQuest, setClearedQuest] = useState(clearedQuestHistory)
-  // 地图的完成进度，用来描绘进度条，为-1则不显示进度条
-  const [questProgress, setQuestProgress] = useState(questProgressHistory)
- */
-  /* 用户的个人数据 */
-  /*
-  // 用户的次元结晶
-  const [userDimenstal, setUserDimenstal] = useState(userDimenstalHistory)
-  // 用户的伙伴列表
-  const [aiboStore, setAiboStore] = useState(aiboStoreHistory)
-  // 用户召唤的伙伴量，用于给每个伙伴一个不重复的id
-  const [aiboNum, setAiboNum] = useState(aiboNumHistory)
-  // 记录：伙伴收集情况
-  const [aiboRecord, setAiboRecord] = useState(aiboRecordHistory)
-  // 记录：伙伴队伍情况
-  const [aiboTeam, setAiboTeam] = useState(aiboTeamHistory)
-  // console.log([userDimenstal, aiboStore, aiboNum, aiboRecord])
- */
-  // 定时器，每隔几秒保存数据
-  /* useInterval(() => {
-    localStorage.setItem('userDimenstal', JSON.stringify(props.userDimenstal))
-    localStorage.setItem('aiboStore', JSON.stringify(props.aiboStore))
-    localStorage.setItem('aiboNum', JSON.stringify(props.aiboNum))
-    localStorage.setItem('aiboRecord', JSON.stringify(props.aiboRecord))
-    localStorage.setItem('aiboTeam', JSON.stringify(props.aiboTeam))
-    localStorage.setItem('togglePage', JSON.stringify(props.togglePage))
-    localStorage.setItem('nowArea', JSON.stringify(props.nowArea))
-    localStorage.setItem('mapRecordEasy', JSON.stringify(props.mapRecordEasy))
-    localStorage.setItem('clearedQuest', JSON.stringify(props.clearedQuest))
-    localStorage.setItem('questProgress', JSON.stringify(props.questProgress))
-    localStorage.setItem('nowChoosenTeam', JSON.stringify(props.nowChoosenTeam))
-    localStorage.setItem('initGame', 'alreadyInit')
-  }, 5000) */
-
-  return (
+)((props: any) =>
+// 首先从缓存中读出历史数据，如果没有缓存，则使用初始值
+  (
     <div className='App'>
       {/* 用于弹出的页面 */}
-      {(showGachaPage || showAiboChoosePage) && <div className='boxPageMask'>
+      {(props.showGachaPage || props.showAiboChoosePage) && <div className='boxPageMask'>
         {/* 召唤页面 */}
-        {showGachaPage && (<div>
+        {props.showGachaPage && (<div>
           <GachaPage
             userDimenstal={props.userDimenstal}
             setUserDimenstal={props.setUserDimenstal}
-            setShowGachaPage={setShowGachaPage}
+            setShowGachaPage={props.setShowGachaPage}
             aiboStore={props.aiboStore}
             setAiboStore={props.setAiboStore}
             aiboNum={props.aiboNum}
@@ -1164,10 +949,10 @@ const App4 = connect(
           />
         </div>)}
         {/* 选择伙伴页面 */}
-        {showAiboChoosePage && (<div>
+        {props.showAiboChoosePage && (<div>
           <AiboChoosePage
             aiboStore={props.aiboStore}
-            setShowAiboChoosePage={setShowAiboChoosePage}
+            setShowAiboChoosePage={props.setShowAiboChoosePage}
             nowChoosenAibo={props.nowChoosenAibo}
             nowChoosenTeam={props.nowChoosenTeam}
             aiboTeam={props.aiboTeam}
@@ -1189,50 +974,47 @@ const App4 = connect(
       </div>
       {/* 显示的页面主体 */}
       <div className='pageContain'>
-        {props.togglePage[0] && (<AchievePage
+        {props.togglePage === 0 && (<AchievePage
           aiboRecord={props.aiboRecord}
         />)}
-        {props.togglePage[1] && (<HomePage
-          aiboStore={props.aiboStore}
-          setAiboStore={props.setAiboStore}
-          aiboNum={props.aiboNum}
-          setAiboNum={props.setAiboNum}
-          aiboTeam={props.aiboTeam}
-          nowChoosenTeam={props.nowChoosenTeam}
-          setShowAiboChoosePage={setShowAiboChoosePage}
-          setNowChoosenAibo={props.setNowChoosenAibo}
-          setNowChoosenTeam={props.setNowChoosenTeam}
-          userDimenstal={props.userDimenstal}
-          setUserDimenstal={props.setUserDimenstal}
-        />)}
-        {props.togglePage[2] && (<MarketPage
-          setShowGachaPage={setShowGachaPage}
-        />)}
-        {props.togglePage[3] && (<MapPage
-          nowArea={props.nowArea}
-          setNowArea={props.setNowArea}
-          mapRecordEasy={props.mapRecordEasy}
-          setMapRecordEasy={props.setMapRecordEasy}
-          clearedQuest={props.clearedQuest}
-          setClearedQuest={props.setClearedQuest}
-          questProgress={props.questProgress}
-          setQuestProgress={props.setQuestProgress}
-          userDimenstal={props.userDimenstal}
-          setUserDimenstal={props.setUserDimenstal}
-          aiboStore={props.aiboStore}
-          aiboTeam={props.aiboTeam}
-          nowChoosenTeam={props.nowChoosenTeam}
-          setShowAiboChoosePage={setShowAiboChoosePage}
-          setNowChoosenAibo={props.setNowChoosenAibo}
-          setNowChoosenTeam={props.setNowChoosenTeam}
-        />)}
+        {props.togglePage === 1 && (<HomePage />)}
+        {props.togglePage === 2 && (<MarketPage />)}
+        {props.togglePage === 3 && (<MapPage />)}
       </div>
       {/* 导航栏 */}
       <div className='infoBar'>
-        <Navigation setTogglePage={props.setTogglePage} />
+        <Navigation />
       </div>
     </div>
   )
-})
+)
 
-export default App4
+const App3 = () => {
+  const [isInterval, setIsInterval] = useState(false)// 是否在计数状态
+  const [nowProgress, setNowProgress] = useState(0)// 当前计数的值
+
+  useInterval(
+    () => {
+      if (nowProgress >= 100) {
+        console.log('完成')
+      } else {
+        let willProgress = nowProgress + Math.random() * 10
+        setNowProgress(willProgress > 100 ? 100 : willProgress)
+      }
+    },
+    (isInterval && nowProgress < 100) ? 200 : null
+  )
+
+  return (<>
+    <Button onClick={() => {
+      if (!isInterval) {
+        setIsInterval(true)
+      } else {
+        setIsInterval(false)
+      }
+    }}>{isInterval ? '停止' : '开始'}</Button>
+    <div>{`当前值为：${nowProgress}`}</div>
+  </>)
+}
+
+export default App

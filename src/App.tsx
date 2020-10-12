@@ -5,7 +5,7 @@ import {
   setNowArea, // 当前显示的地区
   setNowChoosenAibo, // 当前选择的队员栏位，用于房间页-伙伴队伍以及伙伴选择页面之间的通信
   setNowChoosenTeam, // 当前选择的队伍栏位，用于房间页-伙伴队伍以及伙伴选择页面之间的通信
-  setQuestIsExploring, // 每个关卡当前是否正在探索当中
+  setUserMapInfo, // 用户自己的地图关卡信息，包括每个关卡当前是否正在探索当中、简单难度下地图的完成情况
   setQuestProgress, // 正在进行探索的关卡
   setTogglePage, // 切换页面
   // 临时数据
@@ -17,7 +17,6 @@ import {
   setAiboStore, // 用户的伙伴列表
   setAiboTeam, // 记录：伙伴队伍情况
   setClearedQuest, // 当前玩家正在打第几关，也就是说页面需要渲染到第几关，之后的关卡不再渲染
-  setMapRecordEasy, // 简单难度下地图的完成情况
   setUserDimenstal // 用户的次元结晶
 } from './actions'
 import './App.less'
@@ -30,6 +29,8 @@ import {
   BottomNavigationAction,
   Box,
   Checkbox,
+  ClickAwayListener,
+  Fade,
   GridList,
   GridListTile,
   GridListTileBar,
@@ -38,6 +39,7 @@ import {
   LinearProgress,
   ListSubheader,
   Paper,
+  Tooltip,
   Typography
 } from '@material-ui/core'
 import { Theme, createStyles, makeStyles } from '@material-ui/core/styles'
@@ -433,6 +435,7 @@ const HomePage = connect(
   const [showCheckbox, setShowCheckbox] = useState(false)
   // 用来显示送别选择的伙伴后获得多少次元水晶
   const [howManyDimenstal, setHowManyDimenstal] = useState(0)
+  const [open, setOpen] = useState(false)
 
   return (
     <div className='pageArea flexRow'>
@@ -463,7 +466,7 @@ const HomePage = connect(
             let selectedListTemp = selectedList
             let howManyDimenstalTemp = howManyDimenstal
             props.aiboStore.forEach((val) => {
-              if (val.star === 1 && !selectedListTemp.has(val.aiboId)) {
+              if (val.star === 1 && !selectedListTemp.has(val.aiboId) && !props.aiboTeam.find((x) => x.find((y) => y === val.aiboId))) {
                 selectedListTemp.add(val.aiboId)
                 howManyDimenstalTemp = howManyDimenstalTemp + val.dimenstal
               }
@@ -475,7 +478,7 @@ const HomePage = connect(
             let selectedListTemp = selectedList
             let howManyDimenstalTemp = howManyDimenstal
             props.aiboStore.forEach((val) => {
-              if (val.star === 2 && !selectedListTemp.has(val.aiboId)) {
+              if (val.star === 2 && !selectedListTemp.has(val.aiboId) && !props.aiboTeam.find((x) => x.find((y) => y === val.aiboId))) {
                 selectedListTemp.add(val.aiboId)
                 howManyDimenstalTemp = howManyDimenstalTemp + val.dimenstal
               }
@@ -492,34 +495,14 @@ const HomePage = connect(
         </div>)}
         <div className='flex-15 flexStart wrapScroll'>
           {props.aiboStore.map((val, ind) =>
-            <div key={val.aiboId}>
-              {/* 给每个伙伴建立多选框 */showCheckbox && (
-                <Checkbox
-                  checked={selectedList.has(val.aiboId)}
-                  onChange={() => {
-                    let selectedListTemp = selectedList
-                    if (selectedListTemp.has(val.aiboId)) {
-                      selectedListTemp.delete(val.aiboId)
-                      val.dimenstal && setHowManyDimenstal(howManyDimenstal - val.dimenstal)
-                    } else {
-                      selectedListTemp.add(val.aiboId)
-                      val.dimenstal && setHowManyDimenstal(howManyDimenstal + val.dimenstal)
-                    }
-                    setSelectedList(selectedListTemp)
-
-                    /* setHowManyDimenstal(
-                      props.aiboStore.reduce((allDS, nowAibo) => {
-                        if (nowAibo.dimenstal && selectedList.has(nowAibo.aiboId)) {
-                          return allDS + nowAibo.dimenstal
-                        } else {
-                          return allDS
-                        }
-                      }, 0)
-                    ) */
-                  }}
-                  inputProps={{ 'aria-label': 'primary checkbox' }}
-                />
-              )}
+            <div key={val.aiboId} style={{ display: 'flex' }}>
+              {/* 给每个伙伴建立多选框 */showCheckbox && <CheckBox
+                val={val}
+                selectedList={selectedList}
+                setSelectedList={setSelectedList}
+                howManyDimenstal={howManyDimenstal}
+                setHowManyDimenstal={setHowManyDimenstal}
+              />}
               <AiboCard onClick={() => {
                 setChosenAiboInfo(val)
               }} id={val.id} star={val.star} name={val.name} />
@@ -555,6 +538,64 @@ const HomePage = connect(
       </div>
     </div>
   )
+})
+
+// 多选框
+const CheckBox = connect(
+  // 用state来更新UI组件
+  (state: any) => ({
+    aiboTeam: state.userValue.aiboTeam
+  }),
+  // UI组件的行为作为action，通过dispatch来更新state
+  (dispatch: any) => ({
+  })
+)((props: {
+  aiboTeam: number[][]
+} & {
+  val: userAiboType,
+  selectedList: Set<number>,
+  setSelectedList: (para: Set<number>) => void,
+  howManyDimenstal: number,
+  setHowManyDimenstal: (para: number) => void
+}) => {
+  const [checked, setChecked] = useState(false)
+
+  return (<>
+    {/* <Fade
+      disableStrictModeCompat
+      in={checked}
+      timeout={checked ? {
+        appear: 1000,
+        enter: 2000,
+        exit: 3000
+      } : {}}
+    >
+      <Paper elevation={4} className='checkBox'>
+          已在队伍中
+      </Paper>
+    </Fade> */}
+    <Checkbox
+      checked={props.selectedList.has(props.val.aiboId)}
+      onChange={() => {
+        // 点击复选框后首先判断当前伙伴是否已经在队伍当中，如果是则不能选中
+        if (props.aiboTeam.find((x) => x.find((y) => y === props.val.aiboId))) {
+          setChecked(!checked)
+        } else {
+          let selectedListTemp = props.selectedList
+          if (selectedListTemp.has(props.val.aiboId)) {
+            selectedListTemp.delete(props.val.aiboId)
+            props.val.dimenstal && props.setHowManyDimenstal(props.howManyDimenstal - props.val.dimenstal)
+          } else {
+            selectedListTemp.add(props.val.aiboId)
+            props.val.dimenstal && props.setHowManyDimenstal(props.howManyDimenstal + props.val.dimenstal)
+          }
+          props.setSelectedList(selectedListTemp)
+        }
+      }}
+      disabled={props.aiboTeam.find((x) => x.find((y) => y === props.val.aiboId)) !== undefined}
+      inputProps={{ 'aria-label': 'primary checkbox' }}
+    />
+  </>)
 })
 
 // 排序按钮
@@ -723,7 +764,6 @@ const MapPage = connect(
 // 建立每个quest的组件
 interface QuestComponentProps {
   nowArea: number,
-  mapRecordEasy: boolean[][][],
   setMapRecordEasy: (para: boolean[][][]) => void,
   clearedQuest: number,
   setClearedQuest: (para: number) => void,
@@ -739,7 +779,6 @@ const QuestComponent = connect(
   // 用state来更新UI组件
   (state: any) => ({
     nowArea: state.systemValue.nowArea,
-    mapRecordEasy: state.userValue.mapRecordEasy,
     clearedQuest: state.userValue.clearedQuest,
     questIsExploring: state.systemValue.questIsExploring,
     questProgress: state.userValue.questProgress,
@@ -747,7 +786,6 @@ const QuestComponent = connect(
   }),
   // UI组件的行为作为action，通过dispatch来更新state
   (dispatch: any) => ({
-    setMapRecordEasy: (para: boolean[][][]) => dispatch(setMapRecordEasy(para)),
     setClearedQuest: (para: number) => dispatch(setClearedQuest(para)),
     setQuestIsExploring: (para: boolean[][][]) => dispatch(setQuestIsExploring(para)),
     setQuestProgress: (para: exploringQuestType[]) => dispatch(setQuestProgress(para)),
@@ -820,12 +858,12 @@ const QuestComponent = connect(
 /*
 // 进度条组件
 const LinearProgressWithLabel = (props: LinearProgressProps & { value: number }) => (
-  <Box display="flex" alignItems="center">
-    <Box width="100%" mr={1}>
-      <LinearProgress variant="determinate" {...props} />
+  <Box display='flex' alignItems='center'>
+    <Box width='100%' mr={1}>
+      <LinearProgress variant='determinate' {...props} />
     </Box>
     <Box minWidth={35}>
-      <Typography variant="body2" color="textSecondary">{`${Math.round(
+      <Typography variant='body2' color='textSecondary'>{`${Math.round(
         props.value
       )}%`}</Typography>
     </Box>
@@ -904,7 +942,6 @@ const App = connect(
     aiboStore: state.userValue.aiboStore,
     aiboTeam: state.userValue.aiboTeam,
     clearedQuest: state.userValue.clearedQuest,
-    mapRecordEasy: state.userValue.mapRecordEasy,
     questProgress: state.userValue.questProgress,
     userDimenstal: state.userValue.userDimenstal
   }),
@@ -924,7 +961,6 @@ const App = connect(
     setAiboStore: (para: userAiboType[]) => dispatch(setAiboStore(para)),
     setAiboTeam: (para: number[][]) => dispatch(setAiboTeam(para)),
     setClearedQuest: (para: number) => dispatch(setClearedQuest(para)),
-    setMapRecordEasy: (para: boolean[][][]) => dispatch(setMapRecordEasy(para)),
     setQuestProgress: (para: number[][][]) => dispatch(setQuestProgress(para)),
     setUserDimenstal: (para: number) => dispatch(setUserDimenstal(para))
   })

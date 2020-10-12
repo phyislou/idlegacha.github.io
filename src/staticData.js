@@ -317,18 +317,15 @@ const mapInfo = [
   }
 ]
 
-// 专门用来构造和地图数据结构（地图->地区->关卡）相同的动态数据
-function mapStructureInit (padding) {
-  return mapInfo.map((mapCursor) =>
-    mapCursor.areas.map((areaCursor) =>
-      areaCursor.quests.map(() => padding)
-    )
+// 地图完成情况的初始记录，格式应该与上面的地图信息相同，数据提供给redux的userValue
+const userMapInfo = mapInfo.map((mapCursor) =>
+  mapCursor.areas.map((areaCursor) =>
+    areaCursor.quests.map((questCursor) => ({
+      id: questCursor.id,
+      CompleteEasy: false,
+      isExploring: false
+    }))// 返回一个和静态地图数据结构（地图->地区->关卡）相同的动态数据结构
   )
-}
-// 地图完成情况的初始记录，格式应该与上面的地图信息相同
-const mapRecordInitEasy = mapStructureInit(false)
-// 表示每个quest是否正在探索，格式应该与上面的地图信息相同
-const questIsExploringInit = mapStructureInit(false)
-// qes:仅仅用来保存结构，应该用更好的方法。
+)
 
-export { aiboInfo, mapInfo, mapRecordInitEasy, questIsExploringInit }
+export { aiboInfo, mapInfo, userMapInfo }

@@ -1,4 +1,4 @@
-const aiboInfo = [
+const personaInfo = [
   { id: 1, name: '绿色史莱姆', star: 1, elements: '风', ab1: '分裂', ab2: null, hp: 335, atk: 28, def: 24, dimenstal: 150 },
   { id: 2, name: '蓝色史莱姆', star: 1, elements: '水', ab1: '迸发', ab2: null, hp: 260, atk: 28, def: 20, dimenstal: 187 },
   { id: 3, name: '红色史莱姆', star: 1, elements: '火', ab1: '弹射', ab2: null, hp: 200, atk: 32, def: 12, dimenstal: 487 },
@@ -322,10 +322,10 @@ const userMapInfo = mapInfo.map((mapCursor) =>
   mapCursor.areas.map((areaCursor) =>
     areaCursor.quests.map((questCursor) => ({
       id: questCursor.id,
-      CompleteEasy: false,
+      completeEasy: false,
       isExploring: false
     }))// 返回一个和静态地图数据结构（地图->地区->关卡）相同的动态数据结构
   )
 )
 
-export { aiboInfo, mapInfo, userMapInfo }
+export { personaInfo, mapInfo, userMapInfo }

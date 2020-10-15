@@ -1,24 +1,65 @@
-import { aiboInfo, userMapInfo } from '../staticData'
+import { personaInfo, mapInfo } from '../staticData'
 
-const userValueHistory: any = localStorage.getItem('userValue') === null ? {
-  userDimenstal: 0,
-  aiboStore: [],
-  aiboNum: 0,
-  aiboRecord: [...Array(aiboInfo.length)].map(() => false),
-  aiboTeam: [...Array(4)].map(() => [...Array(4)].map(() => 0)),
-  userMapInfo: userMapInfo,
-  clearedQuest: 1
-} : JSON.parse(localStorage.getItem('userValue') as string)
+let userValueHistory: any
+
+if (localStorage.getItem('userValue') === null) {
+  // 用户的地图数据，给出一个和地图静态数据相同结构的数据
+  let userMapInfoTemp: any = {}
+  Object.keys(mapInfo).forEach((key) => {
+    userMapInfoTemp[key] = {
+      id: key,
+      isShow: false,
+      completeEasy: false,
+      isExploring: false,
+      exploringTeam: null,
+      exploringProgress: 0
+    }
+  })
+  // 然后将开头的数据显示出来
+  ;['root', '1', '1-1', '1-1-1'].forEach((fixKey) => {
+    userMapInfoTemp[fixKey].isShow = true
+  })
+
+  // 伙伴种类的信息
+  let userPersonaInfoTemp: any = {}
+  Object.values(personaInfo).forEach((val) => {
+    userPersonaInfoTemp[val.id] = {
+      id: val.id,
+      have: false
+    }
+  })
+
+  // 队伍的信息
+  let aiboTeamTemp: any = {}
+  for (let key = 1; key < 5; key++) {
+    aiboTeamTemp[key] = {
+      id: key,
+      isExploring: false,
+      exploringQuest: null,
+      member: [...Array(4)].map(() => null)
+    }
+  }
+
+  userValueHistory = {
+    aiboNum: 0,
+    aiboStore: {},
+    aiboTeam: aiboTeamTemp,
+    userPersonaInfo: userPersonaInfoTemp,
+    userDimenstal: 10000,
+    userMapInfo: userMapInfoTemp
+  }
+} else {
+  userValueHistory = JSON.parse(localStorage.getItem('userValue') as string)
+}
 
 const userValue = (state: any = userValueHistory, action: any) => {
   switch (action.type) {
   case 'setAiboNum': return { ...state, aiboNum: action.neo }
-  case 'setAiboRecord': return { ...state, aiboRecord: action.neo }
   case 'setAiboStore': return { ...state, aiboStore: action.neo }
   case 'setAiboTeam': return { ...state, aiboTeam: action.neo }
-  case 'setUserMapInfo': return { ...state, userMapInfo: action.neo }
-  case 'setClearedQuest': return { ...state, clearedQuest: action.neo }
+  case 'setUserAiboInfo': return { ...state, userPersonaInfo: action.neo }
   case 'setUserDimenstal': return { ...state, userDimenstal: action.neo }
+  case 'setUserMapInfo': return { ...state, userMapInfo: action.neo }
   default: return state
   }
 }

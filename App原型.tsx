@@ -77,7 +77,7 @@ function useInterval (callback: any, delay: any) {
 }
 
 // 伙伴数据
-interface aiboType {
+interface personaType {
   id: number,
   name?: string,
   star?: number,
@@ -91,7 +91,7 @@ interface aiboType {
 }
 
 // 记录用户伙伴的数据类型
-interface userAiboType extends aiboType {
+interface aiboType extends personaType {
   aiboId: number,
   level?: number,
   exp?: number
@@ -174,7 +174,7 @@ const gacha = () => {
 }
 
 // 绘制召唤人物卡
-interface AiboCardProps extends aiboType {
+interface AiboCardProps extends personaType {
   onClick?: () => void
 }
 
@@ -220,8 +220,8 @@ interface GachaPageProps {
   userDimenstal: number,
   setUserDimenstal: (para: number) => void,
   setShowGachaPage: (para: boolean) => void,
-  aiboStore: userAiboType[],
-  setAiboStore: (para: userAiboType[]) => void,
+  aiboStore: aiboType[],
+  setAiboStore: (para: aiboType[]) => void,
   aiboNum: number,
   setAiboNum: (para: number) => void,
   aiboRecord: boolean[],
@@ -264,7 +264,7 @@ const GachaPage = (props: GachaPageProps) => {
       setGachaTimes(0)
       setBonusTimes(0)
       // 然后开始抽卡
-      const gsArr: aiboType[] = []
+      const gsArr: personaType[] = []
       for (let i = 0; i < num; i++) {
         let gcTemp = gacha()// 随机得到一个id
         let gsTemp = personaInfo.find((x) => x.id === gcTemp)// 在人物表中查找该id
@@ -274,7 +274,7 @@ const GachaPage = (props: GachaPageProps) => {
         gsArr.push(gsTemp)
       }
       // 抽完后先更新用户伙伴数据
-      const ucArr: userAiboType[] = []
+      const ucArr: aiboType[] = []
       const mrArr = props.aiboRecord
       for (let i = 0; i < gsArr.length; i++) {
         ucArr.push({ ...gsArr[i], aiboId: props.aiboNum + i + 1, level: 1, exp: 0 })
@@ -318,7 +318,7 @@ const GachaPage = (props: GachaPageProps) => {
       </div>
       <Button variant='outlined' onClick={() => {onGacha(gachaTimes)}}>开始召唤</Button>
       <div className='gachaResultList'>
-        {gachaResult.map((val: aiboType, ind: number) => <AiboCard
+        {gachaResult.map((val: personaType, ind: number) => <AiboCard
           key={ind + '-' + val.id/* 这里考虑到diff的效率，用两个字段拼接作为key */}
           id={val.id} star={val.star} name={val.name} />)}
       </div>
@@ -328,7 +328,7 @@ const GachaPage = (props: GachaPageProps) => {
 
 // 建立伙伴选择页面
 interface AiboChoosePageProps {
-  aiboStore: userAiboType[],
+  aiboStore: aiboType[],
   setShowAiboChoosePage: (para: boolean) => void,
   nowChoosenTeam: number,
   nowChoosenAibo: number,
@@ -394,8 +394,8 @@ const AchievePage = (props: AchievePageProps) => (
 
 // 建立房间页面
 interface HomePageProps extends AiboTeamPageProps {
-  aiboStore: userAiboType[],
-  setAiboStore: (para: userAiboType[]) => void,
+  aiboStore: aiboType[],
+  setAiboStore: (para: aiboType[]) => void,
   aiboNum: number,
   setAiboNum: (para: number) => void,
   userDimenstal: number,
@@ -422,7 +422,7 @@ const HomePage = connect(
     setShowAiboChoosePage: (para: boolean) => dispatch(setShowAiboChoosePage(para)),
     // 用户数据
     setAiboNum: (para: number) => dispatch(setAiboNum(para)),
-    setAiboStore: (para: userAiboType[]) => dispatch(setAiboStore(para)),
+    setAiboStore: (para: aiboType[]) => dispatch(setAiboStore(para)),
     setClearedQuest: (para: number) => dispatch(setClearedQuest(para)),
     setUserDimenstal: (para: number) => dispatch(setUserDimenstal(para))
   })
@@ -552,7 +552,7 @@ const CheckBox = connect(
 )((props: {
   aiboTeam: number[][]
 } & {
-  val: userAiboType,
+  val: aiboType,
   selectedList: Set<number>,
   setSelectedList: (para: Set<number>) => void,
   howManyDimenstal: number,
@@ -602,8 +602,8 @@ const CheckBox = connect(
 interface SortButtonProps {
   buttonName: string,
   sortAttr: string,
-  aiboStore: userAiboType[],
-  setAiboStore: (para: userAiboType[]) => void
+  aiboStore: aiboType[],
+  setAiboStore: (para: aiboType[]) => void
 }
 
 const SortButton = (props: SortButtonProps) => {
@@ -627,7 +627,7 @@ const SortButton = (props: SortButtonProps) => {
 
 // 伙伴信息页面
 interface AiboInfoPageProps {
-  chosenAiboInfo: userAiboType,
+  chosenAiboInfo: aiboType,
   deleteAibo: () => void
 }
 
@@ -649,7 +649,7 @@ const AiboInfoPage = (props: AiboInfoPageProps) => (
 
 // 伙伴队伍模块（用于房间和地图两个页面）
 interface AiboTeamPageProps {
-  aiboStore: userAiboType[],
+  aiboStore: aiboType[],
   aiboTeam: number[][],
   nowChoosenTeam: number,
   setShowAiboChoosePage: (para: boolean) => void
@@ -953,7 +953,7 @@ const App = connect(
     // 用户数据
     setAiboNum: (para: number) => dispatch(setAiboNum(para)),
     setAiboRecord: (para: boolean[]) => dispatch(setAiboRecord(para)),
-    setAiboStore: (para: userAiboType[]) => dispatch(setAiboStore(para)),
+    setAiboStore: (para: aiboType[]) => dispatch(setAiboStore(para)),
     setAiboTeam: (para: number[][]) => dispatch(setAiboTeam(para)),
     setClearedQuest: (para: number) => dispatch(setClearedQuest(para)),
     setQuestProgress: (para: number[][][]) => dispatch(setQuestProgress(para)),

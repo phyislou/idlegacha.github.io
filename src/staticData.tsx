@@ -1,5 +1,5 @@
 // 伙伴类型
-export interface aiboType {
+export interface personaType {
   id: number,
   name: string,
   star: number,
@@ -14,7 +14,7 @@ export interface aiboType {
 
 // 伙伴数据
 const personaInfo: {
-  [index: number]: aiboType
+  [index: number]: personaType
 } = {
   1: { id: 1, name: '绿色史莱姆', star: 1, elements: '风', ab1: '分裂', ab2: null, hp: 335, atk: 28, def: 24, dimenstal: 150 },
   2: { id: 2, name: '蓝色史莱姆', star: 1, elements: '水', ab1: '迸发', ab2: null, hp: 260, atk: 28, def: 20, dimenstal: 187 },

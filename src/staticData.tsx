@@ -12,6 +12,16 @@ export interface personaType {
   dimenstal?: number
 }
 
+/*
+atk attack 攻击
+def defence 防御
+
+str strength 力量
+con constitution 体质
+int intelligence 智力
+mnd 应该是魔法防御 心智或精神
+luc lucky 幸运
+ */
 // 伙伴数据
 const personaInfo: {
   [index: number]: personaType
@@ -257,7 +267,7 @@ const mapStructure: {
   /*    */'1-2-7': { id: '1-2-7', prevId: '1-2-6', nextId: '1-3', parentId: '1-2', chlidId: null },
   /*  */'1-3': { id: '1-3', prevId: '1-2-7', nextId: '1-3-1', parentId: '1', chlidId: ['1-3-1', '1-3-2', '1-3-3'] },
   /*    */'1-3-1': { id: '1-3-1', prevId: '1-3', nextId: '1-3-2', parentId: '1-3', chlidId: null },
-  /*    */'1-3-2': { id: '1-3-2', prevId: '1-3-1', nextId: '1-3-2', parentId: '1-3', chlidId: null },
+  /*    */'1-3-2': { id: '1-3-2', prevId: '1-3-1', nextId: '1-3-3', parentId: '1-3', chlidId: null },
   /*    */'1-3-3': { id: '1-3-3', prevId: '1-3-2', nextId: '2', parentId: '1-3', chlidId: null },
   /**/'2': { id: '2', prevId: '1-3-3', nextId: '2-1', parentId: 'root', chlidId: ['2-1', '2-2', '2-3'] },
   /*  */'2-1': { id: '2-1', prevId: '2', nextId: '2-1-1', parentId: '2', chlidId: ['2-1-1', '2-1-2', '2-1-3', '2-1-4', '2-1-5', '2-1-6'] },
@@ -277,7 +287,7 @@ const mapStructure: {
   /*    */'2-2-7': { id: '2-2-7', prevId: '2-2-6', nextId: '2-3', parentId: '2-2', chlidId: null },
   /*  */'2-3': { id: '2-3', prevId: '2-2-7', nextId: '2-3-1', parentId: '2', chlidId: ['2-3-1', '2-3-2', '2-3-3'] },
   /*    */'2-3-1': { id: '2-3-1', prevId: '2-3', nextId: '2-3-2', parentId: '2-3', chlidId: null },
-  /*    */'2-3-2': { id: '2-3-2', prevId: '2-3-1', nextId: '2-3-2', parentId: '2-3', chlidId: null },
+  /*    */'2-3-2': { id: '2-3-2', prevId: '2-3-1', nextId: '2-3-3', parentId: '2-3', chlidId: null },
   /*    */'2-3-3': { id: '2-3-3', prevId: '2-3-2', nextId: '3', parentId: '2-3', chlidId: null },
   /**/'3': { id: '3', prevId: '2-3-3', nextId: '3-1', parentId: 'root', chlidId: ['3-1', '3-2', '3-3'] },
   /*  */'3-1': { id: '3-1', prevId: '3', nextId: '3-1-1', parentId: '3', chlidId: ['3-1-1', '3-1-2', '3-1-3', '3-1-4', '3-1-5', '3-1-6'] },
@@ -297,7 +307,7 @@ const mapStructure: {
   /*    */'3-2-7': { id: '3-2-7', prevId: '3-2-6', nextId: '3-3', parentId: '3-2', chlidId: null },
   /*  */'3-3': { id: '3-3', prevId: '3-2-7', nextId: '3-3-1', parentId: '3', chlidId: ['3-3-1', '3-3-2', '3-3-3'] },
   /*    */'3-3-1': { id: '3-3-1', prevId: '3-3', nextId: '3-3-2', parentId: '3-3', chlidId: null },
-  /*    */'3-3-2': { id: '3-3-2', prevId: '3-3-1', nextId: '3-3-2', parentId: '3-3', chlidId: null },
+  /*    */'3-3-2': { id: '3-3-2', prevId: '3-3-1', nextId: '3-3-3', parentId: '3-3', chlidId: null },
   /*    */'3-3-3': { id: '3-3-3', prevId: '3-3-2', nextId: 'void', parentId: '3-3', chlidId: null }
 }
 

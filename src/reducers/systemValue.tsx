@@ -1,8 +1,8 @@
 const systemValueHistory: any = localStorage.getItem('systemValue') === null ? {
   nowArea: '1-1',
   nowCountry: '1',
-  nowChoosenTeam: null,
-  nowChoosenAibo: null,
+  nowChoosenTeam: 0, // 默认0号队伍
+  nowChoosenAibo: 0, // 默认0号位的成员
   togglePage: 1
 } : JSON.parse(localStorage.getItem('systemValue') as string)
 

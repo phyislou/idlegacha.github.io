@@ -36,7 +36,7 @@ if (localStorage.getItem('userValue') === null) {
       id: key,
       isExploring: false,
       exploringQuest: null,
-      member: [...Array(4)].map(() => null)
+      member: [...Array(4)].map(() => 0)
     }
   }
 
@@ -57,7 +57,7 @@ const userValue = (state: any = userValueHistory, action: any) => {
   case 'setAiboNum': return { ...state, aiboNum: action.neo }
   case 'setAiboStore': return { ...state, aiboStore: action.neo }
   case 'setAiboTeam': return { ...state, aiboTeam: action.neo }
-  case 'setUserAiboInfo': return { ...state, userPersonaInfo: action.neo }
+  case 'setUserPersonaInfo': return { ...state, userPersonaInfo: action.neo }
   case 'setUserDimenstal': return { ...state, userDimenstal: action.neo }
   case 'setUserMapInfo': return { ...state, userMapInfo: action.neo }
   default: return state

@@ -1,0 +1,23 @@
+{
+  "files": {
+    "main.css": "/idlegacha.github.io/static/css/main.5f71c29b.chunk.css",
+    "main.js": "/idlegacha.github.io/static/js/main.78db9a64.chunk.js",
+    "main.js.map": "/idlegacha.github.io/static/js/main.78db9a64.chunk.js.map",
+    "runtime-main.js": "/idlegacha.github.io/static/js/runtime-main.3cd93ea5.js",
+    "runtime-main.js.map": "/idlegacha.github.io/static/js/runtime-main.3cd93ea5.js.map",
+    "static/js/2.63ab2077.chunk.js": "/idlegacha.github.io/static/js/2.63ab2077.chunk.js",
+    "static/js/2.63ab2077.chunk.js.map": "/idlegacha.github.io/static/js/2.63ab2077.chunk.js.map",
+    "index.html": "/idlegacha.github.io/index.html",
+    "precache-manifest.1beaf176c504a2a6c5648011f1c5c263.js": "/idlegacha.github.io/precache-manifest.1beaf176c504a2a6c5648011f1c5c263.js",
+    "service-worker.js": "/idlegacha.github.io/service-worker.js",
+    "static/css/main.5f71c29b.chunk.css.map": "/idlegacha.github.io/static/css/main.5f71c29b.chunk.css.map",
+    "static/js/2.63ab2077.chunk.js.LICENSE.txt": "/idlegacha.github.io/static/js/2.63ab2077.chunk.js.LICENSE.txt",
+    "static/media/font-awesome.css": "/idlegacha.github.io/static/media/fontawesome-webfont.fee66e71.woff"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.3cd93ea5.js",
+    "static/js/2.63ab2077.chunk.js",
+    "static/css/main.5f71c29b.chunk.css",
+    "static/js/main.78db9a64.chunk.js"
+  ]
+}
